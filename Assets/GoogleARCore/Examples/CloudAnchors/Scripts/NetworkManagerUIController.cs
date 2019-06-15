@@ -16,6 +16,7 @@
 // limitations under the License.
 //
 // </copyright>
+//THIS SCRIPT WAS MODIFIED.
 //-----------------------------------------------------------------------
 
 namespace GoogleARCore.Examples.CloudAnchors
@@ -48,12 +49,12 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Label showing the current active room.
         /// </summary>
-        public GameObject CurrentRoomLabel;
+        //public GameObject CurrentRoomLabel;
 
         /// <summary>
         /// The Cloud Anchors Example Controller.
         /// </summary>
-        public CloudAnchorsExampleController CloudAnchorsExampleController;
+        public CloudAnchorsController CloudAnchorsExampleController;
 
         /// <summary>
         /// The Panel containing the list of available rooms to join.
@@ -85,7 +86,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The current room number.
         /// </summary>
-        private string m_CurrentRoomNumber;
+        //private string m_CurrentRoomNumber;
 
         /// <summary>
         /// The Join Room buttons.
@@ -137,7 +138,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// Handles the user intent to refresh the room list.
         /// </summary>
-        public void OnRefhreshRoomListClicked()
+        public void OnRefreshRoomListClicked()
         {
             m_Manager.matchMaker.ListMatches(
                 startPageNumber: 0,
@@ -299,10 +300,10 @@ namespace GoogleARCore.Examples.CloudAnchors
                 return;
             }
 
-            m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
+            //m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
             _ChangeLobbyUIVisibility(false);
             SnackbarText.text = "Find a plane, tap to create a Cloud Anchor.";
-            CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
+            //CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
         }
 
         /// <summary>
@@ -323,10 +324,10 @@ namespace GoogleARCore.Examples.CloudAnchors
                 return;
             }
 
-            m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
+            //m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
             _ChangeLobbyUIVisibility(false);
             SnackbarText.text = "Waiting for Cloud Anchor to be hosted...";
-            CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
+            //CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
         }
 
         /// <summary>
@@ -337,7 +338,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         private void _ChangeLobbyUIVisibility(bool visible)
         {
             LobbyScreen.gameObject.SetActive(visible);
-            CurrentRoomLabel.gameObject.SetActive(!visible);
+            //CurrentRoomLabel.gameObject.SetActive(!visible);
             foreach (GameObject button in m_JoinRoomButtonsPool)
             {
                 bool active = visible && button.GetComponentInChildren<Text>().text != string.Empty;

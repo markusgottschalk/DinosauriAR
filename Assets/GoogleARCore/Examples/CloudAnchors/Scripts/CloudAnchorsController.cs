@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="CloudAnchorsExampleController.cs" company="Google">
+// <copyright file="CloudAnchorsController.cs" company="Google">
 //
 // Copyright 2018 Google Inc. All Rights Reserved.
 //
@@ -34,7 +34,7 @@ namespace GoogleARCore.Examples.CloudAnchors
     /// <summary>
     /// Controller for the Cloud Anchor. Handles the ARCore lifecycle.
     /// </summary>
-    public class CloudAnchorsExampleController : MonoBehaviour
+    public class CloudAnchorsController : MonoBehaviour
     {
         [Header("ARCore")]
 
