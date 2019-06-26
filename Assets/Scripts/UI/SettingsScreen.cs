@@ -1,13 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SettingsScreen : Screen
 {
-    private Canvas settingsScreen;
-    private string placeholderText;
-    private string inputFieldText;
+    [SerializeField]
+    private Canvas settingsScreen = default;
+    private TextMeshProUGUI placeholderText;
+    private TMP_InputField inputFieldText;
+    [SerializeField]
+    private GameObject inputField = default;
 
     public UIController UIController;
 
@@ -15,9 +19,9 @@ public class SettingsScreen : Screen
 
     void Start()
     {
-        settingsScreen = gameObject.GetComponent<Canvas>();
-        placeholderText = gameObject.GetComponent<InputField>().placeholder.GetComponent<Text>().text;
-        inputFieldText = gameObject.GetComponent<InputField>().text;
+        //settingsScreen = gameObject.GetComponent<Canvas>();
+        placeholderText = inputField.GetComponent<TMP_InputField>().placeholder.GetComponent<TextMeshProUGUI>();
+        inputFieldText = inputField.GetComponent<TMP_InputField>();
     }
 
     public override void ShowScreen()
@@ -30,16 +34,12 @@ public class SettingsScreen : Screen
         settingsScreen.enabled = false;
     }
 
-    public void ChangeName(string newName)
-    {
-        playerName = newName;
-    }
-
     public void OnSaveClicked()
     {
-        UIController.PlayerName = playerName;
-        inputFieldText = "";
-        placeholderText = playerName;
+        playerName = inputFieldText.text;
+        UIController.ChangePlayerName(playerName);
+        inputFieldText.text = "";
+        placeholderText.text = playerName;
     }
 
 }

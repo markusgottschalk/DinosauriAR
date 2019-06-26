@@ -34,14 +34,17 @@ namespace GoogleARCore.Examples.CloudAnchors
     /// <summary>
     /// Controller for the Cloud Anchor. Handles the ARCore lifecycle.
     /// </summary>
-    public class CloudAnchorsController : MonoBehaviour
+    public class ARCoreController : MonoBehaviour
     {
         [Header("ARCore")]
 
         /// <summary>
         /// The UI Controller.
         /// </summary>
-        public NetworkManagerUIController UIController;
+        public NetworkManagerController NetworkManagerController;
+
+        public UIController UIController;
+        public GameManager GameManager;
 
         /// <summary>
         /// The root for ARCore-specific GameObjects in the scene.
@@ -96,7 +99,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// The Network Manager.
         /// </summary>
 #pragma warning disable 618
-        private NetworkManager m_NetworkManager;
+        //private NetworkManager m_NetworkManager;
 #pragma warning restore 618
 
         private bool m_MatchStarted = false;
@@ -117,12 +120,12 @@ namespace GoogleARCore.Examples.CloudAnchors
         public void Start()
         {
 #pragma warning disable 618
-            m_NetworkManager = UIController.GetComponent<NetworkManager>();
+            //m_NetworkManager = UIController.GetComponent<NetworkManager>();
 #pragma warning restore 618
 
             // A Name is provided to the Game Object so it can be found by other Scripts
             // instantiated as prefabs in the scene.
-            gameObject.name = "CloudAnchorsExampleController";
+            gameObject.name = "ARCoreController";
             _ResetStatus();
         }
 
@@ -337,17 +340,12 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         private void _UpdateApplicationLifecycle()
         {
-            if (!m_MatchStarted && m_NetworkManager.IsClientConnected())
+            if (!m_MatchStarted && NetworkManagerController.IsClientConnected())
             {
                 m_MatchStarted = true;
             }
 
-            // Exit the app when the 'back' button is pressed.
-            if (Input.GetKey(KeyCode.Escape))
-            {
-                Application.Quit();
-            }
-
+            //Screen of smartphone should never sleep when expedition is active.
             var sleepTimeout = SleepTimeout.NeverSleep;
             Screen.sleepTimeout = sleepTimeout;
 
@@ -360,22 +358,23 @@ namespace GoogleARCore.Examples.CloudAnchors
             // appear.
             if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
             {
-                UIController.ShowErrorMessage(
-                    "Camera permission is needed to run this application.");
+                UIController.ShowMessage(
+                    /*"Camera permission is needed to run this application."*/
+                    "Die App braucht die Berechtigung auf die Kamera zuzugreifen!");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 5.0f);
             }
             else if (Session.Status.IsError())
             {
-                UIController.ShowErrorMessage(
-                    "ARCore encountered a problem connecting.  Please start the app again.");
+                UIController.ShowMessage(
+                    "ARCore hat ein Verbindungsproblem. Bitte starte die App erneut.");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 5.0f);
             }
-            else if (m_MatchStarted && !m_NetworkManager.IsClientConnected())
+            else if (m_MatchStarted && !NetworkManagerController.IsClientConnected())
             {
-                UIController.ShowErrorMessage(
-                    "Network session disconnected!  Please start the app again.");
+                UIController.ShowMessage(
+                    "Das Netzwerk ist nicht mehr vorhanden. Bitte starte die App erneut.");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 5.0f);
             }
@@ -386,7 +385,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         private void _DoQuit()
         {
-            Application.Quit();
+            GameManager.LeaveApp();
         }
     }
 }

@@ -4,26 +4,50 @@ using UnityEngine;
 
 public class ExpeditionsScreen : Screen
 {
-    private Canvas m_ExpeditionsScreen;
+    [SerializeField]
+    private Canvas expeditionsScreen = default;
+    public List<GameObject> expeditions = new List<GameObject>();
+
+
     public UIController UIController;
+
 
     void Start()
     {
-        m_ExpeditionsScreen = gameObject.GetComponent<Canvas>();
+        //expeditionsScreen = GetComponent<Canvas>();
     }
 
     public override void ShowScreen()
     {
-        m_ExpeditionsScreen.enabled = true;
+        expeditionsScreen.enabled = true;
     }
 
     public override void HideScreen()
     {
-        m_ExpeditionsScreen.enabled = false;
+        expeditionsScreen.enabled = false;
     }
 
     public void OnTengaduruExpeditionClicked()
     {
         UIController.Expeditions_TengaduruExpedition();
     }
+
+    public void ShowExpeditionMultiplayerAddition_Tengaduru(bool active)
+    {
+        expeditions[0].SetActive(active);
+    }
+
+    public void OnExpeditionsRefreshClicked()
+    {
+        UIController.RefreshExpeditionRoomList(string.Empty);
+    }
+
+    public void ShowExpeditionMultiplayerAddition_All(bool active)
+    {
+        foreach(GameObject go in expeditions)
+        {
+            go.SetActive(active);
+        }
+    }
+
 }

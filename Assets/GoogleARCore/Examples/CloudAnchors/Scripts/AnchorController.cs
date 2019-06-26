@@ -54,7 +54,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Cloud Anchors example controller.
         /// </summary>
-        private CloudAnchorsController m_CloudAnchorsController;
+        private ARCoreController m_CloudAnchorsController;
 
         /// <summary>
         /// The Unity Start() method.
@@ -63,7 +63,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         {
             m_CloudAnchorsController =
                 GameObject.Find("CloudAnchorsExampleController")
-                    .GetComponent<CloudAnchorsController>();
+                    .GetComponent<ARCoreController>();
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         private void _OnResolved(Transform anchorTransform)
         {
             var cloudAnchorController = GameObject.Find("CloudAnchorsExampleController")
-                                                  .GetComponent<CloudAnchorsController>();
+                                                  .GetComponent<ARCoreController>();
             cloudAnchorController.SetWorldOrigin(anchorTransform);
         }
 

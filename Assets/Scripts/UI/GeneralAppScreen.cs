@@ -1,25 +1,28 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GeneralAppScreen : Screen
 {
     public UIController UIController;
 
-    private Canvas generalAppScreen;
     [SerializeField]
-    private GameObject snackbar;
+    private Canvas generalAppScreen = default;
     [SerializeField]
-    private GameObject backButton;
+    private GameObject snackbar = default;
+    [SerializeField]
+    private GameObject backButton = default;
+    [SerializeField]
+    private GameObject settingsButton = default;
+    private TextMeshProUGUI snackbarText;
+    private bool backButtonIsActive;
 
     void Start()
     {
-        generalAppScreen = gameObject.GetComponent<Canvas>();
-    }
-
-    void Update()
-    {
-        
+        //generalAppScreen = gameObject.GetComponent<Canvas>();
+        snackbarText = snackbar.GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
     public override void ShowScreen()
@@ -42,6 +45,11 @@ public class GeneralAppScreen : Screen
         UIController.OnSettingsButtonClicked();
     }
 
+    public void ChangeSnackbarText(string newText)
+    {
+        snackbarText.text = newText;
+    }
+
     public void ShowSnackbar()
     {
         snackbar.SetActive(true);
@@ -55,10 +63,23 @@ public class GeneralAppScreen : Screen
     public void ShowBackButton()
     {
         backButton.SetActive(true);
+        backButtonIsActive = true;
     }
 
     public void HideBackButton()
     {
         backButton.SetActive(false);
+        backButtonIsActive = false;
     }
+
+    public bool BackButtonIsActive()
+    {
+        return backButtonIsActive;
+    }
+
+    public void ShowSettingsButton(bool active)
+    {
+        settingsButton.SetActive(active);
+    }
+
 }

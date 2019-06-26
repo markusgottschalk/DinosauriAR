@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class StartingAppScreen : Screen
 {
-
-    private Canvas startinAppScreen;
+    [SerializeField]
+    private Canvas startinAppScreen = default;
 
     //[SerializeField]
     //private GameObject m_ExpeditionsButton;
@@ -14,7 +14,7 @@ public class StartingAppScreen : Screen
 
     void Start()
     {
-        startinAppScreen = gameObject.GetComponent<Canvas>();
+        //startinAppScreen = gameObject.GetComponent<Canvas>();
         //m_ExpeditionsButton.GetComponent<Button>().onClick.AddListener(_OnExpeditionsButtonClicked);
     }
 
@@ -33,4 +33,8 @@ public class StartingAppScreen : Screen
         UIController.StartingApp_Expeditions();
     }
 
+    public void OnLeavingAppButtonClicked()
+    {
+        UIController.LeavingApp();
+    }
 }

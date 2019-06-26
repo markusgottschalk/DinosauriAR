@@ -40,6 +40,8 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         public GameObject AnchorPrefab;
 
+        public string playerName; //TODO: get Playername from GameManager
+
         /// <summary>
         /// The Unity OnStartLocalPlayer() method.
         /// </summary>
