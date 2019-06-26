@@ -112,6 +112,7 @@ public class UIController : MonoBehaviour
         {
             GeneralAppScreen.ChangeSnackbarText("Fehler: Es konnte keine Expedition erstellt werden. " + extendedInfo);
             ShowSnackbarForSeconds(5);
+            return;
         }
         else
         {
@@ -126,9 +127,8 @@ public class UIController : MonoBehaviour
                     break;
 
             }
-
-
         }
+        GeneralAppScreen.ShowSettingsButton(false); //TODO: erstmal ohne Namensänderung wenn Match erstellt wurde
     }
 
     /// <summary>
@@ -148,6 +148,7 @@ public class UIController : MonoBehaviour
             Screen previousScreen = previousScreens.Pop();
             previousScreen.ShowScreen();
         }
+        GeneralAppScreen.ShowSettingsButton(true); //TODO...  (siehe OnMatchCreate...)
     }
 
     /// <summary>
@@ -165,8 +166,8 @@ public class UIController : MonoBehaviour
     /// <param name="success">Indicates if the request succeeded.</param>
     /// <param name="extendedInfo">A text description for the error if success is false.</param>
     /// <param name="expeditionNameFilter">For which expedition was the list refreshed. String.empty when whole list was refreshed.</param>
-    /// <param name="expeditionNamesANDHosts">The expedition names and host names of active expeditions for expeditionNameFilter.</param>
-    public void OnMatchList(bool success, string extendedInfo, string expeditionNameFilter, Dictionary<string, string> expeditionNamesANDHosts, List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
+    /// <param name="hostANDexpeditionsNames">The expedition names and host names of active expeditions for expeditionNameFilter.</param>
+    public void OnMatchList(bool success, string extendedInfo, string expeditionNameFilter, Dictionary<string, string> hostANDexpeditionsNames, List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
     {
         if (!success)
         {
@@ -177,7 +178,7 @@ public class UIController : MonoBehaviour
         {
             //GeneralAppScreen.ChangeSnackbarText("Die verfügbaren Spiele werden nun angezeigt.");
             //StartCoroutine(ShowSnackbarForSeconds(5));
-            if (expeditionNamesANDHosts.Count == 0) //no matches found
+            if (hostANDexpeditionsNames.Count == 0) //no matches found
             {
                 if (expeditionNameFilter == string.Empty) //searched for ALL matches -> all UI can be disabled
                 {
@@ -191,28 +192,28 @@ public class UIController : MonoBehaviour
                 else
                 {
                     deactivateExpeditionInRoom(expeditionNameFilter);
-                    ExpeditionsLobbyScreen.RefreshLobby(expeditionNamesANDHosts, matches);
+                    ExpeditionsLobbyScreen.RefreshLobby(hostANDexpeditionsNames, matches);
                     return;
                 }
                 
             }
             
 
-            foreach(KeyValuePair<string, string> match in expeditionNamesANDHosts)
+            foreach(KeyValuePair<string, string> match in hostANDexpeditionsNames)
             {
                 //check if at least one expedition is (already) active
                 foreach (Expedition expedition in GameManager.expeditions)
                 {
-                    if (match.Key == expedition.Name && expedition.active == false)
+                    if (match.Value == expedition.Name && expedition.active == false)
                     {
                         expedition.active = true;
-                        activateExpeditionInRoom(match.Key);
+                        activateExpeditionInRoom(match.Value);
                     }
                 }
             }
 
             //only refresh the expedition which was asked for
-            ExpeditionsLobbyScreen.RefreshLobby(expeditionNamesANDHosts, matches);
+            ExpeditionsLobbyScreen.RefreshLobby(hostANDexpeditionsNames, matches);
         }
     }
 
@@ -262,6 +263,10 @@ public class UIController : MonoBehaviour
             ShowSnackbarForSeconds(5);
             return;
         }
+        ExpeditionsLobbyScreen.HideScreen();
+        GeneralAppScreen.HideBackButton();              //TODO: erstmal Settings&Back-Button ausblenden
+        GeneralAppScreen.ShowSettingsButton(false);
+        GameManager.JoinExpedition("TengaduruExpedition");
 
         GeneralAppScreen.ChangeSnackbarText("Warte auf das Hosten des Cloud Anchors...");
         ShowSnackbarForSeconds(5);

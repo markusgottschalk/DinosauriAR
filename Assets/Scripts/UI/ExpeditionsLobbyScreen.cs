@@ -55,26 +55,33 @@ public class ExpeditionsLobbyScreen : Screen
         UIController.RefreshExpeditionRoomList(expeditionName);
     }
 
-    public void RefreshLobby(Dictionary<string, string> expeditionNamesANDHosts, List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
+    public void RefreshLobby(Dictionary<string, string> hostANDexpeditionNames, List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
     {
         foreach(GameObject go in joinButtons)
         {
             Destroy(go);
         }
 
-        if(expeditionNamesANDHosts.Count == 0) //no matches
+        if(hostANDexpeditionNames.Count == 0) //no matches
         {
             return;
         }
 
-        int i = 0;
-        foreach(KeyValuePair<string, string> match in expeditionNamesANDHosts)
+        //int i = 0;
+        //foreach(KeyValuePair<string, string> match in hostANDexpeditionNames)
+        //{
+        //    GameObject expedition = Instantiate(ExpeditionRoomPrefab, expeditionList.transform);
+        //    expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.Key; //write leader name
+        //    joinButtons.Add(expedition);
+        //    expedition.GetComponent<Button>().onClick.AddListener(() => UIController.JoinRoom(matches[i]));
+        //    i++;
+        //}
+        foreach(UnityEngine.Networking.Match.MatchInfoSnapshot match in matches)
         {
             GameObject expedition = Instantiate(ExpeditionRoomPrefab, expeditionList.transform);
-            expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.Value; //write leader name
+            expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.hostNodeId.ToString(); //TODO: write leader name
             joinButtons.Add(expedition);
-            expedition.GetComponent<Button>().onClick.AddListener(() => UIController.JoinRoom(matches[i]));
-            i++;
+            expedition.GetComponent<Button>().onClick.AddListener(() => UIController.JoinRoom(match));
         }
     }
 

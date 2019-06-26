@@ -63,6 +63,14 @@ public class GameManager : MonoBehaviour
         ARCoreController.OnEnterHostingModeClick();
     }
 
+    public void JoinExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
+    {
+        UICamera.SetActive(false);
+        ARCoreCamera.SetActive(true); //das eigentlich besser von ARCoreController setzen lassen?!
+        ARCoreController.gameObject.SetActive(true);
+        ARCoreController.OnEnterResolvingModeClick();
+    }
+
     public void LeaveApp()
     {
         Application.Quit();            //TODO: Quit is in CloudAnchorsController...?

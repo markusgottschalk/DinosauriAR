@@ -57,7 +57,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Cloud Anchors Example Controller.
         /// </summary>
-        public ARCoreController CloudAnchorsExampleController;
+        public ARCoreController ARCoreController;
 
         /// <summary>
         /// The Panel containing the list of available rooms to join.
@@ -238,7 +238,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         private void _OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matches, string expeditionName)
 #pragma warning restore 618
         {
-            Dictionary<string, string> expeditionNamesANDHosts = new Dictionary<string, string>();
+            Dictionary<string, string> hostANDexpeditionNames = new Dictionary<string, string>();
 
             networkManager.OnMatchList(success, extendedInfo, matches);
             if(matches != null)
@@ -247,11 +247,11 @@ namespace GoogleARCore.Examples.CloudAnchors
                 foreach (MatchInfoSnapshot match in matches)
 #pragma warning restore 618
                 {
-                    expeditionNamesANDHosts.Add(match.name, match.hostNodeId.ToString()); //TODO: get PlayerName from NodeId... (at CreateRoom?)
+                    hostANDexpeditionNames.Add(match.hostNodeId.ToString(), match.name); //TODO: get PlayerName from NodeId... (at CreateRoom?)
                 }
             }
 
-            UIController.OnMatchList(success, extendedInfo, expeditionName, expeditionNamesANDHosts, matches);
+            UIController.OnMatchList(success, extendedInfo, expeditionName, hostANDexpeditionNames, matches);
 
 //            if (m_Manager.matches != null)
 //            {
@@ -417,10 +417,10 @@ namespace GoogleARCore.Examples.CloudAnchors
 
 
 
-        private string _GetRoomNumberFromNetworkId(NetworkID networkID)
-        {
-            return (System.Convert.ToInt64(networkID.ToString()) % 10000).ToString();
-        }
+        //private string _GetRoomNumberFromNetworkId(NetworkID networkID)
+        //{
+        //    return (System.Convert.ToInt64(networkID.ToString()) % 10000).ToString();
+        //}
 
     }
 
