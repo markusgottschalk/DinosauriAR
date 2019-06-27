@@ -40,10 +40,10 @@ public class ExpeditionLobbyScreen : Screen
         expeditionLobbyScreen.enabled = false;
     }
 
-    public void OnStartExpeditionClicked()
-    {
-        UIController.ExpeditionLobby_StartExpedition();
-    }
+    //public void OnStartExpeditionClicked()
+    //{
+    //    UIController.ExpeditionLobby_StartExpedition();
+    //}
 
     public void ChangeLeaderName(string newName)
     {

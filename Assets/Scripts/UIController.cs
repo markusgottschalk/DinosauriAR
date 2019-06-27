@@ -37,13 +37,6 @@ public class UIController : MonoBehaviour
         TengaduruExpeditionScreen.ChangeJoinExpeditionButton(false);
     }
 
-    void Update()
-    {
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            BackButtonWasClicked();
-        }
-    }
 
     /// <summary>
     /// Transition from starting screen to expeditions screen when the expeditions button has been clicked.
@@ -86,9 +79,11 @@ public class UIController : MonoBehaviour
     public void StartTengaduruExpedition()
     {
         TengaduruExpeditionScreen.HideScreen();
+        previousScreens.Push(TengaduruExpeditionScreen);
         GeneralAppScreen.HideBackButton();              //TODO: erstmal Settings&Back-Button ausblenden
         GeneralAppScreen.ShowSettingsButton(false);
-        GameManager.StartExpedition("TengaduruExpedition");
+        //GameManager.StartExpedition("TengaduruExpedition");
+        activeScreen = null;                            //TODO: besser wäre ein ARScreen...?
     }
 
 
@@ -112,7 +107,6 @@ public class UIController : MonoBehaviour
         {
             GeneralAppScreen.ChangeSnackbarText("Fehler: Es konnte keine Expedition erstellt werden. " + extendedInfo);
             ShowSnackbarForSeconds(5);
-            return;
         }
         else
         {
@@ -266,7 +260,6 @@ public class UIController : MonoBehaviour
         ExpeditionsLobbyScreen.HideScreen();
         GeneralAppScreen.HideBackButton();              //TODO: erstmal Settings&Back-Button ausblenden
         GeneralAppScreen.ShowSettingsButton(false);
-        GameManager.JoinExpedition("TengaduruExpedition");
 
         GeneralAppScreen.ChangeSnackbarText("Warte auf das Hosten des Cloud Anchors...");
         ShowSnackbarForSeconds(5);
@@ -295,11 +288,6 @@ public class UIController : MonoBehaviour
     //    activeScreen = ExpeditionLobbyScreen;
     //}
 
-    public void ExpeditionLobby_StartExpedition()
-    {
-        //TODO -> start AR...übergeben an AR Controller... start AR Screen (AR Discovery Guide?)
-        //Hide ExpeditionLobbyScreen
-    }
 
     /// <summary>
     /// Transition from the active screen to the settings screen when the settings button has been clicked.
@@ -322,32 +310,34 @@ public class UIController : MonoBehaviour
     /// </summary>
     public void BackButtonWasClicked()
     {
-        activeScreen.HideScreen();
+        if(activeScreen != null)
+        {
+            activeScreen.HideScreen();
+        }
+
         if(activeScreen == SettingsScreen)
         {
             GeneralAppScreen.ShowSettingsButton(true);
         }
 
+        //if there are previous screens
         if (previousScreens.Count != 0)
         {
-            if (NetworkManagerController.IsRoomHosted())
-            {
-                NetworkManagerController.DestroyRoom();
-                //TODO: check if in ARScreen -> then go back to TengaduruExpeditionScreen...
-            }
-            else
-            {
-                Screen previousScreen = previousScreens.Pop();
-                previousScreen.ShowScreen();
-                activeScreen = previousScreen;
-            }
+            //if (NetworkManagerController.IsRoomHosted())
+            //{
+            //    NetworkManagerController.DestroyRoom();
+            //}
+
+            Screen previousScreen = previousScreens.Pop();
+            previousScreen.ShowScreen();
+            activeScreen = previousScreen;
 
             if (previousScreens.Count == 0)
             {
                 GeneralAppScreen.HideBackButton(); //TODO: evtl. nicht so manuell festlegen, sondern immer bei Änderung des Stacks überprüfen, ob Stack leer ist...
             }
         }
-        else
+        else //if there are no previous screens, the app will be closed
         {
             LeavingApp();
         }

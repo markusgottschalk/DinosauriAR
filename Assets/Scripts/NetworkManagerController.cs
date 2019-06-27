@@ -165,9 +165,11 @@ namespace GoogleARCore.Examples.CloudAnchors
         {
             networkManager.OnMatchCreate(success, extendedInfo, matchInfo);
             UIController.OnMatchCreate(success, extendedInfo, matchName);
+
             if (success)
             {
                 roomHosted = (true, matchInfo.networkId);
+                GameManager.StartExpedition(matchName);
             }
 
             //m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
@@ -382,6 +384,11 @@ namespace GoogleARCore.Examples.CloudAnchors
         {
             networkManager.OnMatchJoined(success, extendedInfo, matchInfo);
             UIController.OnMatchJoined(success, extendedInfo);
+
+            if (success)
+            {
+                GameManager.JoinExpedition(networkManager.matchName);
+            }
             //if (!success)
             //{
             //    SnackbarText.text = "Could not join to match: " + extendedInfo;

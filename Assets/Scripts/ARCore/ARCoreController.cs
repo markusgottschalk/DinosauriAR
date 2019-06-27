@@ -114,6 +114,11 @@ namespace GoogleARCore.Examples.CloudAnchors
             Resolving,
         }
 
+        public ApplicationMode getApplicationMode()
+        {
+            return m_CurrentMode;
+        }
+
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
@@ -386,6 +391,11 @@ namespace GoogleARCore.Examples.CloudAnchors
         private void _DoQuit()
         {
             GameManager.LeaveApp();
+        }
+
+        public void QuitARMode()
+        {
+            _ResetStatus();
         }
     }
 }

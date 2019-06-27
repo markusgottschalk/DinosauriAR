@@ -26,6 +26,9 @@ public class GameManager : MonoBehaviour
     public GameObject UICamera;
     public GameObject ARCoreCamera;
     public ARCoreController ARCoreController;
+    public UIController UIController;
+    public NetworkManagerController NetworkManagerController;
+
 
     void Start()
     {
@@ -44,7 +47,21 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        
+        //if the back button of the smartphone was pressed
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            //and the Application is in AR-mode (Hosting)
+            if(ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Hosting)
+            {
+                UIController.BackButtonWasClicked();    //Hide and activate screens
+                UICamera.SetActive(true);
+                NetworkManagerController.DestroyRoom();
+                ARCoreCamera.SetActive(false);
+                ARCoreController.QuitARMode();
+                ARCoreController.gameObject.SetActive(false);
+            }
+
+        }
     }
 
     public void deactivateAllExpeditions()
@@ -58,7 +75,7 @@ public class GameManager : MonoBehaviour
     public void StartExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
-        ARCoreCamera.SetActive(true); //das eigentlich besser von ARCoreController setzen lassen?!
+        ARCoreCamera.SetActive(true);
         ARCoreController.gameObject.SetActive(true);
         ARCoreController.OnEnterHostingModeClick();
     }
@@ -66,14 +83,13 @@ public class GameManager : MonoBehaviour
     public void JoinExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
-        ARCoreCamera.SetActive(true); //das eigentlich besser von ARCoreController setzen lassen?!
+        ARCoreCamera.SetActive(true);
         ARCoreController.gameObject.SetActive(true);
         ARCoreController.OnEnterResolvingModeClick();
     }
 
     public void LeaveApp()
     {
-        Application.Quit();            //TODO: Quit is in CloudAnchorsController...?
-                                       //CloudAnchorsController._DoQuit(); or isQuitting = true...
+        Application.Quit();
     }
 }
