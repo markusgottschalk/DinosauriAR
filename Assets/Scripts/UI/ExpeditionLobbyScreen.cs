@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class ExpeditionLobbyScreen : Screen
+public class ExpeditionLobbyScreen : UIScreen
 {
     public UIController UIController;
 
@@ -59,8 +59,8 @@ public class ExpeditionLobbyScreen : Screen
     {
         switch (newTitle)
         {
-            case "TengaduruExpedition":
-                titleText = "Tengaduru-Expeditionen";
+            case "TendaguruExpedition":
+                titleText = "Tendaguru-Expeditionen";
                 break;
             default:
                 titleText = "no expedition found";

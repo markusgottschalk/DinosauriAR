@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ExpeditionsLobbyScreen : Screen
+public class ExpeditionsLobbyScreen : UIScreen
 {
     public UIController UIController;
     [SerializeField]
@@ -89,8 +89,8 @@ public class ExpeditionsLobbyScreen : Screen
     {
         switch (newTitle)
         {
-            case "TengaduruExpedition":
-                titleText = "Tengaduru-Expeditionen";
+            case "TendaguruExpedition":
+                titleText = "Tendaguru-Expeditionen";
                 break;
             default:
                 titleText = "no expedition found";

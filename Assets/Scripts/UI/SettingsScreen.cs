@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SettingsScreen : Screen
+public class SettingsScreen : UIScreen
 {
     [SerializeField]
     private Canvas settingsScreen = default;

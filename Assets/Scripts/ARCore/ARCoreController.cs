@@ -20,382 +20,449 @@
 //THIS SCRIPT WAS MODIFIED.
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
-    using GoogleARCore;
-    using UnityEngine;
-    using UnityEngine.Networking;
+
+using GoogleARCore;
+using GoogleARCore.Examples.CloudAnchors;
+using UnityEngine;
 
 #if UNITY_EDITOR
-    // Set up touch input propagation while using Instant Preview in the editor.
-    using Input = GoogleARCore.InstantPreviewInput;
+// Set up touch input propagation while using Instant Preview in the editor.
+using Input = GoogleARCore.InstantPreviewInput;
 #endif
 
+/// <summary>
+/// Controller for the Cloud Anchor. Handles the ARCore lifecycle.
+/// </summary>
+public class ARCoreController : MonoBehaviour
+{
+    [Header("ARCore")]
+
     /// <summary>
-    /// Controller for the Cloud Anchor. Handles the ARCore lifecycle.
+    /// The UI Controller.
     /// </summary>
-    public class ARCoreController : MonoBehaviour
+    public NetworkManagerController NetworkManagerController;
+
+    //TODO: eher über NetworkManagerController laufen lassen?!
+    public MainNetworkManager MainNetworkManager;
+
+    public UIController UIController;
+    public GameManager GameManager;
+
+    /// <summary>
+    /// The root for ARCore-specific GameObjects in the scene.
+    /// </summary>
+    public GameObject ARCoreRoot;
+
+    /// <summary>
+    /// The helper that will calculate the World Origin offset when performing a raycast or
+    /// generating planes.
+    /// </summary>
+    public ARCoreWorldOriginHelper ARCoreWorldOriginHelper;
+
+
+    /// <summary>
+    /// Indicates whether the Origin of the new World Coordinate System, i.e. the Cloud Anchor,
+    /// was placed.
+    /// </summary>
+    private bool m_IsOriginPlaced = false;
+
+    /// <summary>
+    /// Indicates whether the Anchor was already instantiated.
+    /// </summary>
+    private bool m_AnchorAlreadyInstantiated = false;
+
+    /// <summary>
+    /// Indicates whether the Cloud Anchor finished hosting.
+    /// </summary>
+    private bool m_AnchorFinishedHosting = false;
+
+    /// <summary>
+    /// True if the app is in the process of quitting due to an ARCore connection error,
+    /// otherwise false.
+    /// </summary>
+    private bool m_IsQuitting = false;
+
+    /// <summary>
+    /// The anchor component that defines the shared world origin.
+    /// </summary>
+    private Component m_WorldOriginAnchor = null;
+
+    /// <summary>
+    /// The last pose of the hit point from AR hit test.
+    /// </summary>
+    private Pose? m_LastHitPose = null;
+
+    /// <summary>
+    /// The current cloud anchor mode.
+    /// </summary>
+    private ApplicationMode m_CurrentMode = ApplicationMode.Ready;
+
+    public GameObject ARCoreDevice;
+    private ARCoreSession arCoreSession;
+
+    /// <summary>
+    /// The Network Manager.
+    /// </summary>
+#pragma warning disable 618
+    //private NetworkManager m_NetworkManager;
+#pragma warning restore 618
+
+    //private bool m_MatchStarted = false;
+
+    /// <summary>
+    /// Enumerates modes the example application can be in.
+    /// </summary>
+    public enum ApplicationMode
     {
-        [Header("ARCore")]
+        Ready,
+        Hosting,
+        Resolving,
+    }
 
-        /// <summary>
-        /// The UI Controller.
-        /// </summary>
-        public NetworkManagerController NetworkManagerController;
+    public ApplicationMode getApplicationMode()
+    {
+        return m_CurrentMode;
+    }
 
-        public UIController UIController;
-        public GameManager GameManager;
-
-        /// <summary>
-        /// The root for ARCore-specific GameObjects in the scene.
-        /// </summary>
-        public GameObject ARCoreRoot;
-
-        /// <summary>
-        /// The helper that will calculate the World Origin offset when performing a raycast or
-        /// generating planes.
-        /// </summary>
-        public ARCoreWorldOriginHelper ARCoreWorldOriginHelper;
-
-
-        /// <summary>
-        /// Indicates whether the Origin of the new World Coordinate System, i.e. the Cloud Anchor,
-        /// was placed.
-        /// </summary>
-        private bool m_IsOriginPlaced = false;
-
-        /// <summary>
-        /// Indicates whether the Anchor was already instantiated.
-        /// </summary>
-        private bool m_AnchorAlreadyInstantiated = false;
-
-        /// <summary>
-        /// Indicates whether the Cloud Anchor finished hosting.
-        /// </summary>
-        private bool m_AnchorFinishedHosting = false;
-
-        /// <summary>
-        /// True if the app is in the process of quitting due to an ARCore connection error,
-        /// otherwise false.
-        /// </summary>
-        private bool m_IsQuitting = false;
-
-        /// <summary>
-        /// The anchor component that defines the shared world origin.
-        /// </summary>
-        private Component m_WorldOriginAnchor = null;
-
-        /// <summary>
-        /// The last pose of the hit point from AR hit test.
-        /// </summary>
-        private Pose? m_LastHitPose = null;
-
-        /// <summary>
-        /// The current cloud anchor mode.
-        /// </summary>
-        private ApplicationMode m_CurrentMode = ApplicationMode.Ready;
-
-        /// <summary>
-        /// The Network Manager.
-        /// </summary>
+    /// <summary>
+    /// The Unity Start() method.
+    /// </summary>
+    public void Start()
+    {
 #pragma warning disable 618
-        //private NetworkManager m_NetworkManager;
+        //m_NetworkManager = UIController.GetComponent<NetworkManager>();
 #pragma warning restore 618
 
-        private bool m_MatchStarted = false;
+        MainNetworkManager.OnClientConnected += _OnConnectedToServer;
+        MainNetworkManager.OnClientDisconnected += _OnDisconnectedFromServer;
 
-        /// <summary>
-        /// Enumerates modes the example application can be in.
-        /// </summary>
-        public enum ApplicationMode
+        // A Name is provided to the Game Object so it can be found by other Scripts
+        // instantiated as prefabs in the scene.
+        gameObject.name = "ARCoreController";
+        ARCoreRoot.SetActive(false);
+        _ResetStatus();
+        arCoreSession = ARCoreDevice.GetComponent<ARCoreSession>();
+    }
+
+    /// <summary>
+    /// The Unity Update() method.
+    /// </summary>
+    public void Update()
+    {
+        _UpdateApplicationLifecycle();
+
+        // If we are neither in hosting nor resolving mode then the update is complete.
+        if (m_CurrentMode != ApplicationMode.Hosting &&
+            m_CurrentMode != ApplicationMode.Resolving)
         {
-            Ready,
-            Hosting,
-            Resolving,
+            return;
         }
 
-        public ApplicationMode getApplicationMode()
+        // If the origin anchor has not been placed yet, then update in resolving mode is
+        // complete.
+        if (m_CurrentMode == ApplicationMode.Resolving && !m_IsOriginPlaced)
         {
-            return m_CurrentMode;
+            return;
         }
 
-        /// <summary>
-        /// The Unity Start() method.
-        /// </summary>
-        public void Start()
+        // If the player has not touched the screen then the update is complete.
+        Touch touch;
+        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
         {
-#pragma warning disable 618
-            //m_NetworkManager = UIController.GetComponent<NetworkManager>();
-#pragma warning restore 618
-
-            // A Name is provided to the Game Object so it can be found by other Scripts
-            // instantiated as prefabs in the scene.
-            gameObject.name = "ARCoreController";
-            _ResetStatus();
+            return;
         }
 
-        /// <summary>
-        /// The Unity Update() method.
-        /// </summary>
-        public void Update()
+        TrackableHit arcoreHitResult = new TrackableHit();
+        m_LastHitPose = null;
+
+        // Raycast against the location the player touched to search for planes.
+        if (ARCoreWorldOriginHelper.Raycast(touch.position.x, touch.position.y,
+                TrackableHitFlags.PlaneWithinPolygon, out arcoreHitResult))
         {
-            _UpdateApplicationLifecycle();
-
-            // If we are neither in hosting nor resolving mode then the update is complete.
-            if (m_CurrentMode != ApplicationMode.Hosting &&
-                m_CurrentMode != ApplicationMode.Resolving)
-            {
-                return;
-            }
-
-            // If the origin anchor has not been placed yet, then update in resolving mode is
-            // complete.
-            if (m_CurrentMode == ApplicationMode.Resolving && !m_IsOriginPlaced)
-            {
-                return;
-            }
-
-            // If the player has not touched the screen then the update is complete.
-            Touch touch;
-            if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
-            {
-                return;
-            }
-
-            TrackableHit arcoreHitResult = new TrackableHit();
-            m_LastHitPose = null;
-
-            // Raycast against the location the player touched to search for planes.
-            if (ARCoreWorldOriginHelper.Raycast(touch.position.x, touch.position.y,
-                    TrackableHitFlags.PlaneWithinPolygon, out arcoreHitResult))
-            {
-                m_LastHitPose = arcoreHitResult.Pose;
-            }
-
-
-            // If there was an anchor placed, then instantiate the corresponding object.
-            if (m_LastHitPose != null)
-            {
-                // The first touch on the Hosting mode will instantiate the origin anchor. Any
-                // subsequent touch will instantiate a star, both in Hosting and Resolving modes.
-                if (_CanPlaceStars())
-                {
-                    _InstantiateStar();
-                }
-                else if (!m_IsOriginPlaced && m_CurrentMode == ApplicationMode.Hosting)
-                {
-                    m_WorldOriginAnchor =
-                        arcoreHitResult.Trackable.CreateAnchor(arcoreHitResult.Pose);
-
-                    SetWorldOrigin(m_WorldOriginAnchor.transform);
-                    _InstantiateAnchor();
-                    OnAnchorInstantiated(true);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the apparent world origin so that the Origin of Unity's World Coordinate System
-        /// coincides with the Anchor. This function needs to be called once the Cloud Anchor is
-        /// either hosted or resolved.
-        /// </summary>
-        /// <param name="anchorTransform">Transform of the Cloud Anchor.</param>
-        public void SetWorldOrigin(Transform anchorTransform)
-        {
-            if (m_IsOriginPlaced)
-            {
-                Debug.LogWarning("The World Origin can be set only once.");
-                return;
-            }
-
-            m_IsOriginPlaced = true;
-
-            ARCoreWorldOriginHelper.SetWorldOrigin(anchorTransform);
-        }
-
-        /// <summary>
-        /// Handles user intent to enter a mode where they can place an anchor to host or to exit
-        /// this mode if already in it.
-        /// </summary>
-        public void OnEnterHostingModeClick()
-        {
-            if (m_CurrentMode == ApplicationMode.Hosting)
-            {
-                m_CurrentMode = ApplicationMode.Ready;
-                _ResetStatus();
-                return;
-            }
-
-            m_CurrentMode = ApplicationMode.Hosting;
-        }
-
-        /// <summary>
-        /// Handles a user intent to enter a mode where they can input an anchor to be resolved or
-        /// exit this mode if already in it.
-        /// </summary>
-        public void OnEnterResolvingModeClick()
-        {
-            if (m_CurrentMode == ApplicationMode.Resolving)
-            {
-                m_CurrentMode = ApplicationMode.Ready;
-                _ResetStatus();
-                return;
-            }
-
-            m_CurrentMode = ApplicationMode.Resolving;
-        }
-
-        /// <summary>
-        /// Callback indicating that the Cloud Anchor was instantiated and the host request was
-        /// made.
-        /// </summary>
-        /// <param name="isHost">Indicates whether this player is the host.</param>
-        public void OnAnchorInstantiated(bool isHost)
-        {
-            if (m_AnchorAlreadyInstantiated)
-            {
-                return;
-            }
-
-            m_AnchorAlreadyInstantiated = true;
-            UIController.OnAnchorInstantiated(isHost);
-        }
-
-        /// <summary>
-        /// Callback indicating that the Cloud Anchor was hosted.
-        /// </summary>
-        /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was hosted
-        /// successfully.</param>
-        /// <param name="response">The response string received.</param>
-        public void OnAnchorHosted(bool success, string response)
-        {
-            m_AnchorFinishedHosting = success;
-            UIController.OnAnchorHosted(success, response);
-        }
-
-        /// <summary>
-        /// Callback indicating that the Cloud Anchor was resolved.
-        /// </summary>
-        /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was resolved
-        /// successfully.</param>
-        /// <param name="response">The response string received.</param>
-        public void OnAnchorResolved(bool success, string response)
-        {
-            UIController.OnAnchorResolved(success, response);
-        }
-
-        /// <summary>
-        /// Instantiates the anchor object at the pose of the m_LastPlacedAnchor Anchor. This will
-        /// host the Cloud Anchor.
-        /// </summary>
-        private void _InstantiateAnchor()
-        {
-            // The anchor will be spawned by the host, so no networking Command is needed.
-            GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
-                .SpawnAnchor(Vector3.zero, Quaternion.identity, m_WorldOriginAnchor);
-        }
-
-        /// <summary>
-        /// Instantiates a star object that will be synchronized over the network to other clients.
-        /// </summary>
-        private void _InstantiateStar()
-        {
-            // Star must be spawned in the server so a networking Command is used.
-            GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
-                .CmdSpawnStar(m_LastHitPose.Value.position, m_LastHitPose.Value.rotation);
+            m_LastHitPose = arcoreHitResult.Pose;
         }
 
 
-        /// <summary>
-        /// Indicates whether a star can be placed.
-        /// </summary>
-        /// <returns><c>true</c>, if stars can be placed, <c>false</c> otherwise.</returns>
-        private bool _CanPlaceStars()
+        // If there was an anchor placed, then instantiate the corresponding object.
+        if (m_LastHitPose != null)
         {
-            if (m_CurrentMode == ApplicationMode.Resolving)
+            // The first touch on the Hosting mode will instantiate the origin anchor. Any
+            // subsequent touch will instantiate a star, both in Hosting and Resolving modes.
+            if (_CanPlaceStars())
             {
-                return m_IsOriginPlaced;
+                _InstantiateStar();
             }
-
-            if (m_CurrentMode == ApplicationMode.Hosting)
+            else if (!m_IsOriginPlaced && m_CurrentMode == ApplicationMode.Hosting)
             {
-                return m_IsOriginPlaced && m_AnchorFinishedHosting;
+                m_WorldOriginAnchor =
+                    arcoreHitResult.Trackable.CreateAnchor(arcoreHitResult.Pose);
+
+                SetWorldOrigin(m_WorldOriginAnchor.transform);
+                _InstantiateAnchor();
+                OnAnchorInstantiated(true);
             }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Resets the internal status.
-        /// </summary>
-        private void _ResetStatus()
-        {
-            // Reset internal status.
-            m_CurrentMode = ApplicationMode.Ready;
-            if (m_WorldOriginAnchor != null)
-            {
-                Destroy(m_WorldOriginAnchor.gameObject);
-            }
-
-            m_WorldOriginAnchor = null;
-        }
-
-        /// <summary>
-        /// Check and update the application lifecycle.
-        /// </summary>
-        private void _UpdateApplicationLifecycle()
-        {
-            if (!m_MatchStarted && NetworkManagerController.IsClientConnected())
-            {
-                m_MatchStarted = true;
-            }
-
-            //Screen of smartphone should never sleep when expedition is active.
-            var sleepTimeout = SleepTimeout.NeverSleep;
-            Screen.sleepTimeout = sleepTimeout;
-
-            if (m_IsQuitting)
-            {
-                return;
-            }
-
-            // Quit if ARCore was unable to connect and give Unity some time for the toast to
-            // appear.
-            if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
-            {
-                UIController.ShowMessage(
-                    /*"Camera permission is needed to run this application."*/
-                    "Die App braucht die Berechtigung auf die Kamera zuzugreifen!");
-                m_IsQuitting = true;
-                Invoke("_DoQuit", 5.0f);
-            }
-            else if (Session.Status.IsError())
-            {
-                UIController.ShowMessage(
-                    "ARCore hat ein Verbindungsproblem. Bitte starte die App erneut.");
-                m_IsQuitting = true;
-                Invoke("_DoQuit", 5.0f);
-            }
-            else if (m_MatchStarted && !NetworkManagerController.IsClientConnected())
-            {
-                UIController.ShowMessage(
-                    "Das Netzwerk ist nicht mehr vorhanden. Bitte starte die App erneut.");
-                m_IsQuitting = true;
-                Invoke("_DoQuit", 5.0f);
-            }
-        }
-
-        /// <summary>
-        /// Actually quit the application.
-        /// </summary>
-        private void _DoQuit()
-        {
-            GameManager.LeaveApp();
-        }
-
-        public void QuitARMode()
-        {
-            _ResetStatus();
         }
     }
+
+    /// <summary>
+    /// Sets the apparent world origin so that the Origin of Unity's World Coordinate System
+    /// coincides with the Anchor. This function needs to be called once the Cloud Anchor is
+    /// either hosted or resolved.
+    /// </summary>
+    /// <param name="anchorTransform">Transform of the Cloud Anchor.</param>
+    public void SetWorldOrigin(Transform anchorTransform)
+    {
+        if (m_IsOriginPlaced)
+        {
+            Debug.LogWarning("The World Origin can be set only once.");
+            return;
+        }
+
+        m_IsOriginPlaced = true;
+
+        ARCoreWorldOriginHelper.SetWorldOrigin(anchorTransform);
+    }
+
+    /// <summary>
+    /// Handles user intent to enter a mode where they can place an anchor to host or to exit
+    /// this mode if already in it.
+    /// </summary>
+    public void OnEnterHostingModeClick()
+    {
+        if (m_CurrentMode == ApplicationMode.Hosting)
+        {
+            m_CurrentMode = ApplicationMode.Ready;
+            _ResetStatus();
+            Debug.Log("Reset ApplicationMode from Hosting to Ready.");
+            //TODO: no return; ??
+        }
+
+        m_CurrentMode = ApplicationMode.Hosting;
+        ARCoreRoot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Handles a user intent to enter a mode where they can input an anchor to be resolved or
+    /// exit this mode if already in it.
+    /// </summary>
+    public void OnEnterResolvingModeClick()
+    {
+        if (m_CurrentMode == ApplicationMode.Resolving)
+        {
+            m_CurrentMode = ApplicationMode.Ready;
+            _ResetStatus();
+            Debug.Log("Reset ApplicationMode from Resolving to Ready.");
+            //TODO: no return; ??
+        }
+
+        m_CurrentMode = ApplicationMode.Resolving;
+        ARCoreRoot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Callback indicating that the Cloud Anchor was instantiated and the host request was
+    /// made.
+    /// </summary>
+    /// <param name="isHost">Indicates whether this player is the host.</param>
+    public void OnAnchorInstantiated(bool isHost)
+    {
+        if (m_AnchorAlreadyInstantiated)
+        {
+            return;
+        }
+
+        m_AnchorAlreadyInstantiated = true;
+        UIController.OnAnchorInstantiated(isHost);
+    }
+
+    /// <summary>
+    /// Callback indicating that the Cloud Anchor was hosted.
+    /// </summary>
+    /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was hosted
+    /// successfully.</param>
+    /// <param name="response">The response string received.</param>
+    public void OnAnchorHosted(bool success, string response)
+    {
+        m_AnchorFinishedHosting = success;
+        UIController.OnAnchorHosted(success, response);
+    }
+
+    /// <summary>
+    /// Callback indicating that the Cloud Anchor was resolved.
+    /// </summary>
+    /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was resolved
+    /// successfully.</param>
+    /// <param name="response">The response string received.</param>
+    public void OnAnchorResolved(bool success, string response)
+    {
+        UIController.OnAnchorResolved(success, response);
+    }
+
+    /// <summary>
+    /// Callback that happens when the client successfully connected to the server.
+    /// </summary>
+    private void _OnConnectedToServer()
+    {
+        if (m_CurrentMode == ApplicationMode.Hosting)
+        {
+            UIController.ShowMessage("Finde eine Fläche und erstelle mit einem Tap auf den Bildschirm einen Anker.");
+        }
+        else if (m_CurrentMode == ApplicationMode.Resolving)
+        {
+            UIController.ShowMessage("Warte, dass der Anker gehostet wird...");
+        }
+        else
+        {
+            _QuitWithReason("Es ist ein Fehler aufgetreten. Bitte starte die Anwendung erneut.");
+            Debug.LogError("Connected to server with neither Hosting nor Resolving mode. ");
+        }
+    }
+
+    /// <summary>
+    /// Callback that happens when the client disconnected from the server.
+    /// </summary>
+    private void _OnDisconnectedFromServer()
+    {
+        _QuitWithReason("Es ist ein Fehler aufgetreten. Bitte starte die Anwendung erneut.");
+        Debug.LogError("Network session disconnected!");
+    }
+
+    /// <summary>
+    /// Instantiates the anchor object at the pose of the m_LastPlacedAnchor Anchor. This will
+    /// host the Cloud Anchor.
+    /// </summary>
+    private void _InstantiateAnchor()
+    {
+        // The anchor will be spawned by the host, so no networking Command is needed.
+        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
+            .SpawnAnchor(Vector3.zero, Quaternion.identity, m_WorldOriginAnchor);
+    }
+
+    /// <summary>
+    /// Instantiates a star object that will be synchronized over the network to other clients.
+    /// </summary>
+    private void _InstantiateStar()
+    {
+        // Star must be spawned in the server so a networking Command is used.
+        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
+            .CmdSpawnStar(m_LastHitPose.Value.position, m_LastHitPose.Value.rotation);
+    }
+
+
+    /// <summary>
+    /// Indicates whether a star can be placed.
+    /// </summary>
+    /// <returns><c>true</c>, if stars can be placed, <c>false</c> otherwise.</returns>
+    private bool _CanPlaceStars()
+    {
+        if (m_CurrentMode == ApplicationMode.Resolving)
+        {
+            return m_IsOriginPlaced;
+        }
+
+        if (m_CurrentMode == ApplicationMode.Hosting)
+        {
+            return m_IsOriginPlaced && m_AnchorFinishedHosting;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Resets the internal status.
+    /// </summary>
+    private void _ResetStatus()
+    {
+        // Reset internal status.
+        m_CurrentMode = ApplicationMode.Ready;
+        if (m_WorldOriginAnchor != null)
+        {
+            Destroy(m_WorldOriginAnchor.gameObject);
+        }
+
+        m_WorldOriginAnchor = null;
+    }
+
+    /// <summary>
+    /// Check and update the application lifecycle.
+    /// </summary>
+    private void _UpdateApplicationLifecycle()
+    {
+        //if (!m_MatchStarted && NetworkManagerController.IsClientConnected())
+        //{
+        //    m_MatchStarted = true;
+        //}
+
+        //Screen of smartphone should never sleep when expedition is active.
+        var sleepTimeout = SleepTimeout.NeverSleep;
+        // Only allow the screen to sleep when not tracking.
+        if (Session.Status != SessionStatus.Tracking)
+        {
+            const int lostTrackingSleepTimeout = 15;
+            sleepTimeout = lostTrackingSleepTimeout;
+        }
+        Screen.sleepTimeout = sleepTimeout;
+
+        if (m_IsQuitting)
+        {
+            return;
+        }
+
+        // Quit if ARCore was unable to connect and give Unity some time for the toast to
+        // appear.
+        if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
+        {
+            _QuitWithReason("Die App braucht die Berechtigung auf die Kamera zuzugreifen!");
+        }
+        else if (Session.Status.IsError())
+        {
+            _QuitWithReason("ARCore hat ein Verbindungsproblem. Bitte starte die App erneut.");
+        }
+        //else if (m_MatchStarted && !NetworkManagerController.IsClientConnected())
+        //{
+        //    UIController.ShowMessage(
+        //        "Das Netzwerk ist nicht mehr vorhanden. Bitte starte die App erneut.");
+        //    m_IsQuitting = true;
+        //    Invoke("_DoQuit", 5.0f);
+        //}
+    }
+
+    /// <summary>
+    /// Actually quit the application.
+    /// </summary>
+    private void _QuitWithReason(string reason)
+    {
+        if (m_IsQuitting)
+        {
+            return;
+        }
+        UIController.ShowMessage(reason);
+        m_IsQuitting = true;
+        Invoke("_DoQuit", 5.0f);
+        GameManager.LeaveApp(); //TODO: besser nur Spiel und AR-modus zu beenden?!
+    }
+
+    private void _DoQuit()
+    {
+        GameManager.LeaveApp();
+    }
+
+    public void QuitARMode()
+    {
+        _ResetStatus();
+        //TODO: does it work??
+        //--> ResetARSession();
+        ARCoreRoot.SetActive(false);
+    }
+
+    public void ResetARSession()
+    {
+        ARCoreSessionConfig arCoreSessionConfig = arCoreSession.SessionConfig;
+        Destroy(arCoreSession);
+        //yield return null ??
+        arCoreSession = ARCoreDevice.AddComponent<ARCoreSession>();
+        arCoreSession.SessionConfig = arCoreSessionConfig;
+        arCoreSession.enabled = true;
+    }
 }
+

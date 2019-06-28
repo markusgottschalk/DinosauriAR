@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExpeditionsScreen : Screen
+public class ExpeditionsScreen : UIScreen
 {
     [SerializeField]
     private Canvas expeditionsScreen = default;
@@ -27,12 +27,12 @@ public class ExpeditionsScreen : Screen
         expeditionsScreen.enabled = false;
     }
 
-    public void OnTengaduruExpeditionClicked()
+    public void OnTendaguruExpeditionClicked()
     {
-        UIController.Expeditions_TengaduruExpedition();
+        UIController.Expeditions_TendaguruExpedition();
     }
 
-    public void ShowExpeditionMultiplayerAddition_Tengaduru(bool active)
+    public void ShowExpeditionMultiplayerAddition_Tendaguru(bool active)
     {
         expeditions[0].SetActive(active);
     }

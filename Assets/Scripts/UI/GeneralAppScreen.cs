@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GeneralAppScreen : Screen
+public class GeneralAppScreen : UIScreen
 {
     public UIController UIController;
 

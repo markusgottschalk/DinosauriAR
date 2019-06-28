@@ -24,7 +24,6 @@ public class GameManager : MonoBehaviour
 
     public List<Expedition> expeditions;
     public GameObject UICamera;
-    public GameObject ARCoreCamera;
     public ARCoreController ARCoreController;
     public UIController UIController;
     public NetworkManagerController NetworkManagerController;
@@ -37,12 +36,10 @@ public class GameManager : MonoBehaviour
             PlayerName = "Dein Name";
         }
         expeditions = new List<Expedition>();
-        Expedition expedition1 = new Expedition("TengaduruExpedition");
+        Expedition expedition1 = new Expedition("TendaguruExpedition");
 
         expeditions.Add(expedition1);
         UICamera.SetActive(true);
-        ARCoreCamera.SetActive(false);
-        ARCoreController.gameObject.SetActive(false);
     }
 
     void Update()
@@ -51,14 +48,12 @@ public class GameManager : MonoBehaviour
         if (Input.GetKey(KeyCode.Escape))
         {
             //and the Application is in AR-mode (Hosting)
-            if(ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Hosting)
+            if(ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Hosting || ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Resolving)
             {
+                ARCoreController.QuitARMode();
                 UIController.BackButtonWasClicked();    //Hide and activate screens
                 UICamera.SetActive(true);
                 NetworkManagerController.DestroyRoom();
-                ARCoreCamera.SetActive(false);
-                ARCoreController.QuitARMode();
-                ARCoreController.gameObject.SetActive(false);
             }
 
         }
@@ -75,17 +70,19 @@ public class GameManager : MonoBehaviour
     public void StartExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
-        ARCoreCamera.SetActive(true);
-        ARCoreController.gameObject.SetActive(true);
         ARCoreController.OnEnterHostingModeClick();
     }
 
     public void JoinExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
-        ARCoreCamera.SetActive(true);
-        ARCoreController.gameObject.SetActive(true);
         ARCoreController.OnEnterResolvingModeClick();
+    }
+
+    public void QuitExpedition()
+    {
+        ARCoreController.QuitARMode();
+        UICamera.SetActive(true);
     }
 
     public void LeaveApp()

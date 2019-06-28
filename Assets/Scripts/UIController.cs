@@ -13,28 +13,28 @@ public class UIController : MonoBehaviour
     public SettingsScreen SettingsScreen;
     public StartingAppScreen StartingAppScreen;
     public ExpeditionsScreen ExpeditionsScreen;
-    public TengaduruExpeditionScreen TengaduruExpeditionScreen;
+    public TendaguruExpeditionScreen TendaguruExpeditionScreen;
     public ExpeditionsLobbyScreen ExpeditionsLobbyScreen;
     //public ExpeditionLobbyScreen ExpeditionLobbyScreen;
 
-    private Stack<Screen> previousScreens;
-    private Screen activeScreen;
+    private Stack<UIScreen> previousScreens;
+    private UIScreen activeScreen;
 
 
     void Start()
     {
-        previousScreens = new Stack<Screen>();
+        previousScreens = new Stack<UIScreen>();
 
         StartingAppScreen.ShowScreen();
         activeScreen = StartingAppScreen;
         GeneralAppScreen.HideBackButton(); //TODO: evtl. nicht so manuell festlegen, sondern immer bei Änderung des Stacks überprüfen, ob Stack leer ist...
 
         ExpeditionsScreen.HideScreen();
-        TengaduruExpeditionScreen.HideScreen();
+        TendaguruExpeditionScreen.HideScreen();
         ExpeditionsLobbyScreen.HideScreen();
         //ExpeditionLobbyScreen.HideScreen();
 
-        TengaduruExpeditionScreen.ChangeJoinExpeditionButton(false);
+        TendaguruExpeditionScreen.ChangeJoinExpeditionButton(false);
     }
 
 
@@ -51,38 +51,38 @@ public class UIController : MonoBehaviour
     }
 
     /// <summary>
-    /// Transition from expeditions screen to Tengaduru expedition screen when the Tengaduru expedition button has been clicked.
+    /// Transition from expeditions screen to Tendaguru expedition screen when the Tendaguru expedition button has been clicked.
     /// </summary>
-    public void Expeditions_TengaduruExpedition()
+    public void Expeditions_TendaguruExpedition()
     {
         ExpeditionsScreen.HideScreen();
         previousScreens.Push(ExpeditionsScreen);
-        TengaduruExpeditionScreen.ShowScreen();
-        activeScreen = TengaduruExpeditionScreen;
+        TendaguruExpeditionScreen.ShowScreen();
+        activeScreen = TendaguruExpeditionScreen;
     }
 
 
     ///// <summary>
-    ///// Transition from Tengaduru expedition screen to specific expedition lobby screen when the prepare expedition button has been clicked.
+    ///// Transition from Tendaguru expedition screen to specific expedition lobby screen when the prepare expedition button has been clicked.
     ///// </summary>
-    //public void TengaduruExpedition_ExpeditionLobby()
+    //public void TendaguruExpedition_ExpeditionLobby()
     //{
-    //    TengaduruExpeditionScreen.HideScreen();
-    //    previousScreens.Push(TengaduruExpeditionScreen);
-    //    ExpeditionLobbyScreen.ShowScreen("TengaduruExpedition");
+    //    TendaguruExpeditionScreen.HideScreen();
+    //    previousScreens.Push(TendaguruExpeditionScreen);
+    //    ExpeditionLobbyScreen.ShowScreen("TendaguruExpedition");
     //    activeScreen = ExpeditionLobbyScreen;     
     //}
 
     /// <summary>
-    /// Start Tengaduru Expedition as Host
+    /// Start Tendaguru Expedition as Host
     /// </summary>
-    public void StartTengaduruExpedition()
+    public void StartTendaguruExpedition()
     {
-        TengaduruExpeditionScreen.HideScreen();
-        previousScreens.Push(TengaduruExpeditionScreen);
+        TendaguruExpeditionScreen.HideScreen();
+        previousScreens.Push(TendaguruExpeditionScreen);
         GeneralAppScreen.HideBackButton();              //TODO: erstmal Settings&Back-Button ausblenden
         GeneralAppScreen.ShowSettingsButton(false);
-        //GameManager.StartExpedition("TengaduruExpedition");
+        //GameManager.StartExpedition("TendaguruExpedition");
         activeScreen = null;                            //TODO: besser wäre ein ARScreen...?
     }
 
@@ -105,16 +105,15 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            GeneralAppScreen.ChangeSnackbarText("Fehler: Es konnte keine Expedition erstellt werden. " + extendedInfo);
-            ShowSnackbarForSeconds(5);
+            ShowMessage("Fehler: Es konnte keine Expedition erstellt werden. " + extendedInfo);
         }
         else
         {
             switch (matchName)
             {
-                case "TengaduruExpedition":
-                    StartTengaduruExpedition();
-                    //TengaduruExpedition_ExpeditionLobby();
+                case "TendaguruExpedition":
+                    StartTendaguruExpedition();
+                    //TendaguruExpedition_ExpeditionLobby();
                     //ExpeditionLobbyScreen.ChangeLeaderName(GameManager.PlayerName);
                     break;
                 default: Debug.Log("Error: No expedition with " + matchName + " was found.");
@@ -134,12 +133,11 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            GeneralAppScreen.ChangeSnackbarText("Fehler: Die Expedition konnte nicht beendet werden! " + extendedInfo);
-            ShowSnackbarForSeconds(5);
+            ShowMessage("Fehler: Die Expedition konnte nicht beendet werden! " + extendedInfo);
         }
         else
         {
-            Screen previousScreen = previousScreens.Pop();
+            UIScreen previousScreen = previousScreens.Pop();
             previousScreen.ShowScreen();
         }
         GeneralAppScreen.ShowSettingsButton(true); //TODO...  (siehe OnMatchCreate...)
@@ -165,8 +163,7 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            GeneralAppScreen.ChangeSnackbarText("Fehler: Die laufenden Expeditionen konnten nicht identifiziert werden! " + extendedInfo);
-            ShowSnackbarForSeconds(5);
+            ShowMessage("Fehler: Die laufenden Expeditionen konnten nicht identifiziert werden! " + extendedInfo);
         }
         else
         {
@@ -176,7 +173,7 @@ public class UIController : MonoBehaviour
             {
                 if (expeditionNameFilter == string.Empty) //searched for ALL matches -> all UI can be disabled
                 {
-                    TengaduruExpeditionScreen.ChangeJoinExpeditionButton(false); //"TODO:" Buttons von allen spezifischen ExpeditionScreens deaktivieren
+                    TendaguruExpeditionScreen.ChangeJoinExpeditionButton(false); //"TODO:" Buttons von allen spezifischen ExpeditionScreens deaktivieren
                     ExpeditionsScreen.ShowExpeditionMultiplayerAddition_All(false);
                     GameManager.deactivateAllExpeditions();
                     //GeneralAppScreen.ChangeSnackbarText("Es konnten keine laufenden Expeditionen gefunden werden");
@@ -213,10 +210,10 @@ public class UIController : MonoBehaviour
 
     private void activateExpeditionInRoom(string expeditionName)
     {
-        if(expeditionName == "TengaduruExpedition")
+        if(expeditionName == "TendaguruExpedition")
         {
-            TengaduruExpeditionScreen.ChangeJoinExpeditionButton(true);
-            ExpeditionsScreen.ShowExpeditionMultiplayerAddition_Tengaduru(true);
+            TendaguruExpeditionScreen.ChangeJoinExpeditionButton(true);
+            ExpeditionsScreen.ShowExpeditionMultiplayerAddition_Tendaguru(true);
             return;
         }
 
@@ -233,10 +230,10 @@ public class UIController : MonoBehaviour
             }
         }
 
-        if (expeditionName == "TengaduruExpedition")
+        if (expeditionName == "TendaguruExpedition")
         {
-            TengaduruExpeditionScreen.ChangeJoinExpeditionButton(false);
-            ExpeditionsScreen.ShowExpeditionMultiplayerAddition_Tengaduru(false);
+            TendaguruExpeditionScreen.ChangeJoinExpeditionButton(false);
+            ExpeditionsScreen.ShowExpeditionMultiplayerAddition_Tendaguru(false);
             //todo... mehr machen, was passiert im expeditionsLobbyScreen... -> "leerer Screen"
             return;
         }
@@ -266,13 +263,13 @@ public class UIController : MonoBehaviour
     }
 
     /// <summary>
-    /// Transition from Tengaduru expedition screen to expeditions lobby screen when the join expedition button has been clicked.
+    /// Transition from Tendaguru expedition screen to expeditions lobby screen when the join expedition button has been clicked.
     /// </summary>
-    public void TengaduruExpedition_ExpeditionsLobby()
+    public void TendaguruExpedition_ExpeditionsLobby()
     {
-        TengaduruExpeditionScreen.HideScreen();
-        previousScreens.Push(TengaduruExpeditionScreen);
-        ExpeditionsLobbyScreen.ShowScreen("TengaduruExpedition");
+        TendaguruExpeditionScreen.HideScreen();
+        previousScreens.Push(TendaguruExpeditionScreen);
+        ExpeditionsLobbyScreen.ShowScreen("TendaguruExpedition");
         activeScreen = ExpeditionsLobbyScreen;
     }
 
@@ -328,7 +325,7 @@ public class UIController : MonoBehaviour
             //    NetworkManagerController.DestroyRoom();
             //}
 
-            Screen previousScreen = previousScreens.Pop();
+            UIScreen previousScreen = previousScreens.Pop();
             previousScreen.ShowScreen();
             activeScreen = previousScreen;
 
@@ -387,15 +384,11 @@ public class UIController : MonoBehaviour
     {
         if (success)
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor wurde erfolgreich erstellt. Tappe auf den Bildschirm um Sterne zu erstellen!");
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text = "Cloud Anchor successfully hosted! Tap to place more stars.";
+            ShowMessage("Der Cloud Anchor wurde erfolgreich erstellt. Tappe auf den Bildschirm um Sterne zu erstellen!");
         }
         else
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor konnte nicht erstellt werden. " + response);
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text = "Cloud Anchor could not be hosted. " + response;
+            ShowMessage("Der Cloud Anchor konnte nicht erstellt werden. " + response);
         }
     }
 
@@ -409,16 +402,11 @@ public class UIController : MonoBehaviour
     {
         if (success)
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor wurde erfolgreich aufgelöst. Tappe auf den Bildschirm um Sterne zu erstellen!");
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text = "Cloud Anchor successfully resolved! Tap to place more stars.";
+            ShowMessage("Der Cloud Anchor wurde erfolgreich aufgelöst. Tappe auf den Bildschirm um Sterne zu erstellen!");
         }
         else
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor konnte nicht aufgelöst werden. Es wird erneut versucht... " + response);
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text =
-            //    "Cloud Anchor could not be resolved. Will attempt again. " + response;
+            ShowMessage("Der Cloud Anchor konnte nicht aufgelöst werden. Es wird erneut versucht... " + response);
         }
     }
 
@@ -431,16 +419,12 @@ public class UIController : MonoBehaviour
     {
         if (isHost)
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor wird gehostet...");
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text = "Hosting Cloud Anchor...";
+            ShowMessage("Der Cloud Anchor wird gehostet...");
         }
         else
         {
-            GeneralAppScreen.ChangeSnackbarText("Der Cloud Anchor wurde erfolgreich vom Host hinzugefügt. Versuche nun ihn aufzulösen...");
-            StartCoroutine(ShowSnackbarForSeconds(5));
-            //SnackbarText.text =
-            //    "Cloud Anchor added to session! Attempting to resolve anchor...";
+            ShowMessage("Der Cloud Anchor wurde erfolgreich vom Host hinzugefügt. Versuche nun ihn aufzulösen...");
         }
     }
+
 }
