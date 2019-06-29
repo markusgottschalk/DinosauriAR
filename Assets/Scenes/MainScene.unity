@@ -484,7 +484,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: Die Tengaduru-Expedition war eine der erfolgreichsten Ausgrabungen von Dinsosaurierknochen...
+  m_text: Die Tendaguru-Expedition war eine der erfolgreichsten Ausgrabungen von Dinsosaurierknochen...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5389,17 +5389,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 265054090}
-        m_MethodName: OnEnterHostingModeClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 757884525}
         m_MethodName: OnJoinExpeditionClicked
         m_Mode: 1
@@ -5651,14 +5640,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcafa573bd4a7da4cbcf4f4144f93b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CloudAnchorsController: {fileID: 265054090}
+  ARCoreController: {fileID: 0}
   NetworkManagerController: {fileID: 1077067569}
   GameManager: {fileID: 1561894445}
   GeneralAppScreen: {fileID: 293531239}
   SettingsScreen: {fileID: 1141738602}
   StartingAppScreen: {fileID: 662177059}
   ExpeditionsScreen: {fileID: 1184477168}
-  TendaguruExpeditionScreen: {fileID: 0}
+  TendaguruExpeditionScreen: {fileID: 1457078155}
   ExpeditionsLobbyScreen: {fileID: 757884525}
 --- !u!1 &921764578
 GameObject:
@@ -6362,7 +6351,7 @@ MonoBehaviour:
   m_ScriptCRCCheck: 1
   m_MaxDelay: 0.01
   m_LogLevel: 0
-  m_PlayerPrefab: {fileID: 1158606050367660, guid: 9d4ec7a0b0d514d24a21e1590418a679,
+  m_PlayerPrefab: {fileID: 8341885325242263552, guid: 0ea1ec88bd0db6540832bd5711056e89,
     type: 3}
   m_AutoCreatePlayer: 1
   m_PlayerSpawnMethod: 0
@@ -6370,7 +6359,7 @@ MonoBehaviour:
   m_OnlineScene: 
   m_SpawnPrefabs:
   - {fileID: 1517545619891756, guid: c162c528b139240d0881c95be8c04f2b, type: 3}
-  - {fileID: 1930613698465500, guid: d7e51cffc46904f65957fa3aeb255467, type: 3}
+  - {fileID: 2962376490741329013, guid: 4fc8f3fa26da07746907b7492acdec78, type: 3}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -8544,7 +8533,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: Tendaguru-Expeditiong
+  m_text: Tendaguru-Expedition
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8758,7 +8747,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tendaguruExpeditionScreen: {fileID: 1457078154}
-  expeditionName: TengaduruExpedition
+  expeditionName: TendaguruExpedition
   UIController: {fileID: 917955994}
   joinExpedition: {fileID: 234250618}
 --- !u!1 &1554918590

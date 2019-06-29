@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using GoogleARCore.Examples.CloudAnchors;
 
 public class UIController : MonoBehaviour
 {
-    public ARCoreController CloudAnchorsController;
+    public ARCoreController ARCoreController;
     public NetworkManagerController NetworkManagerController;
     public GameManager GameManager;
 
@@ -81,7 +80,7 @@ public class UIController : MonoBehaviour
         TendaguruExpeditionScreen.HideScreen();
         previousScreens.Push(TendaguruExpeditionScreen);
         GeneralAppScreen.HideBackButton();              //TODO: erstmal Settings&Back-Button ausblenden
-        GeneralAppScreen.ShowSettingsButton(false);
+        GeneralAppScreen.ShowSettingsButton(false);     //TODO: erstmal ohne Namensänderung wenn Match erstellt wurde
         //GameManager.StartExpedition("TendaguruExpedition");
         activeScreen = null;                            //TODO: besser wäre ein ARScreen...?
     }
@@ -116,12 +115,11 @@ public class UIController : MonoBehaviour
                     //TendaguruExpedition_ExpeditionLobby();
                     //ExpeditionLobbyScreen.ChangeLeaderName(GameManager.PlayerName);
                     break;
-                default: Debug.Log("Error: No expedition with " + matchName + " was found.");
+                default: Debug.LogError("Error: No expedition with " + matchName + " was found.");
                     break;
 
             }
         }
-        GeneralAppScreen.ShowSettingsButton(false); //TODO: erstmal ohne Namensänderung wenn Match erstellt wurde
     }
 
     /// <summary>
@@ -175,7 +173,7 @@ public class UIController : MonoBehaviour
                 {
                     TendaguruExpeditionScreen.ChangeJoinExpeditionButton(false); //"TODO:" Buttons von allen spezifischen ExpeditionScreens deaktivieren
                     ExpeditionsScreen.ShowExpeditionMultiplayerAddition_All(false);
-                    GameManager.deactivateAllExpeditions();
+                    GameManager.DeactivateAllExpeditions();
                     //GeneralAppScreen.ChangeSnackbarText("Es konnten keine laufenden Expeditionen gefunden werden");
                     //ShowSnackbarForSeconds(5);
                     return;
@@ -217,7 +215,7 @@ public class UIController : MonoBehaviour
             return;
         }
 
-        Debug.Log("Error: No expeditions with " + expeditionName + " were found.");
+        Debug.LogError("Error: No expeditions with " + expeditionName + " were found.");
     }
 
     private void deactivateExpeditionInRoom(string expeditionName)
@@ -238,7 +236,7 @@ public class UIController : MonoBehaviour
             return;
         }
 
-        Debug.Log("Error: No expeditions with " + expeditionName + " were found.");
+        Debug.LogError("Error: No expeditions with " + expeditionName + " were found.");
     }
 
     public void JoinRoom(UnityEngine.Networking.Match.MatchInfoSnapshot match)

@@ -237,8 +237,8 @@ public class ARCoreController : MonoBehaviour
             //TODO: no return; ??
         }
 
-        m_CurrentMode = ApplicationMode.Hosting;
         ARCoreRoot.SetActive(true);
+        m_CurrentMode = ApplicationMode.Hosting;
     }
 
     /// <summary>
@@ -255,8 +255,8 @@ public class ARCoreController : MonoBehaviour
             //TODO: no return; ??
         }
 
-        m_CurrentMode = ApplicationMode.Resolving;
         ARCoreRoot.SetActive(true);
+        m_CurrentMode = ApplicationMode.Resolving;
     }
 
     /// <summary>

@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void deactivateAllExpeditions()
+    public void DeactivateAllExpeditions()
     {
         foreach(Expedition expedition in expeditions)
         {
