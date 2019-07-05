@@ -1656,7 +1656,7 @@ PrefabInstance:
         type: 3}
       propertyPath: SessionConfig
       value: 
-      objectReference: {fileID: 11400000, guid: 2df5ff2f38acc4159832322e57364bfa,
+      objectReference: {fileID: 11400000, guid: 092559c72ac41b347bec0a016ddbfe26,
         type: 2}
     - target: {fileID: 1637996540812124, guid: c10877f7cd5764de18d46d7b777d1faa, type: 3}
       propertyPath: m_TagString
@@ -1714,6 +1714,8 @@ MonoBehaviour:
   ARCoreRoot: {fileID: 1995596071}
   ARCoreWorldOriginHelper: {fileID: 635649539}
   ARCoreDevice: {fileID: 261734897}
+  AugmentedImageVisualizer: {fileID: 814992073924286938, guid: 62b0defdf774a294f8f8be4c54ca4f8c,
+    type: 3}
 --- !u!4 &265054091
 Transform:
   m_ObjectHideFlags: 0

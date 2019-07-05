@@ -23,6 +23,7 @@
 
 using GoogleARCore;
 using GoogleARCore.Examples.CloudAnchors;
+using System.Collections.Generic;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -101,6 +102,21 @@ public class ARCoreController : MonoBehaviour
     private ARCoreSession arCoreSession;
 
     /// <summary>
+    /// A prefab for visualizing an AugmentedImage.
+    /// </summary>
+    public AugmentedImageVisualizer AugmentedImageVisualizer;
+
+    /// <summary>
+    /// Dictionary for existing visualizers for images.
+    /// </summary>
+    private Dictionary<int, AugmentedImageVisualizer> visualizers = new Dictionary<int, AugmentedImageVisualizer>();
+
+    /// <summary>
+    /// The images tracked in the current frame.
+    /// </summary>
+    private List<AugmentedImage> augmentedImages = new List<AugmentedImage>();
+
+    /// <summary>
     /// The Network Manager.
     /// </summary>
 #pragma warning disable 618
@@ -150,6 +166,33 @@ public class ARCoreController : MonoBehaviour
     public void Update()
     {
         _UpdateApplicationLifecycle();
+
+        //Image augmentation. Get updated images for this frame.
+        Session.GetTrackables<AugmentedImage>(augmentedImages, TrackableQueryFilter.Updated);
+
+        //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
+        foreach(AugmentedImage image in augmentedImages)
+        {
+            AugmentedImageVisualizer visualizer = null;
+
+            //when visualizer was added before
+            visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
+
+            //if no visualizer was found, add one
+            if(visualizer == null && image.TrackingState == TrackingState.Tracking && image.TrackingMethod == AugmentedImageTrackingMethod.FullTracking)
+            {
+                Debug.Log("An image was found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizer, image.CenterPose.position, image.CenterPose.rotation);
+                visualizer.Image = image;
+                visualizers.Add(image.DatabaseIndex, visualizer);
+            }
+            //if tracking has stopped and will never resume
+            else if ((visualizer != null && image.TrackingState == TrackingState.Stopped)/* || (visualizer != null && image.TrackingMethod == AugmentedImageTrackingMethod.NotTracking)*/)
+            {
+                visualizers.Remove(image.DatabaseIndex);
+                Destroy(visualizer.transform.parent.gameObject);    //destroy visualizer
+            }
+        }
 
         // If we are neither in hosting nor resolving mode then the update is complete.
         if (m_CurrentMode != ApplicationMode.Hosting &&
