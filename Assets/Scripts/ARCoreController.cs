@@ -167,39 +167,61 @@ public class ARCoreController : MonoBehaviour
     {
         _UpdateApplicationLifecycle();
 
-        //Image augmentation. Get updated images for this frame.
-        Session.GetTrackables<AugmentedImage>(augmentedImages, TrackableQueryFilter.Updated);
-
-        //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
-        foreach(AugmentedImage image in augmentedImages)
-        {
-            AugmentedImageVisualizer visualizer = null;
-
-            //when visualizer was added before
-            visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-
-            //if no visualizer was found, add one
-            if(visualizer == null && image.TrackingState == TrackingState.Tracking && image.TrackingMethod == AugmentedImageTrackingMethod.FullTracking)
-            {
-                Debug.Log("An image was found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizer, image.CenterPose.position, image.CenterPose.rotation);
-                visualizer.Image = image;
-                visualizers.Add(image.DatabaseIndex, visualizer);
-            }
-            //if tracking has stopped and will never resume
-            else if ((visualizer != null && image.TrackingState == TrackingState.Stopped)/* || (visualizer != null && image.TrackingMethod == AugmentedImageTrackingMethod.NotTracking)*/)
-            {
-                visualizers.Remove(image.DatabaseIndex);
-                Destroy(visualizer.transform.parent.gameObject);    //destroy visualizer
-            }
-        }
-
         // If we are neither in hosting nor resolving mode then the update is complete.
         if (m_CurrentMode != ApplicationMode.Hosting &&
             m_CurrentMode != ApplicationMode.Resolving)
         {
             return;
         }
+
+        //Image augmentation. Get updated images for this frame.
+        Session.GetTrackables<AugmentedImage>(augmentedImages, TrackableQueryFilter.Updated);
+
+        if(augmentedImages.Count != 0)
+        {
+            Debug.Log("An image was found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+        else
+        {
+            //Debug.Log("NOOOOOO IMAGE");
+        }
+
+        //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
+        foreach(AugmentedImage image in augmentedImages)
+        {
+            AugmentedImageVisualizer visualizer = null;
+            Debug.Log("ADd visualizer!");
+            //image.TrackingState = TrackingState.Tracking;
+
+            //when visualizer was added before
+            visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
+            if(visualizer == null)
+            {
+                Debug.Log("visualizer is null");
+            }
+
+            Debug.Log("Tracking State is " + image.TrackingState);
+
+            //if no visualizer was found, add one
+            if(visualizer == null && image.TrackingState == TrackingState.Tracking)
+            {
+                Anchor anchor = image.CreateAnchor(image.CenterPose);
+                visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizer, anchor.transform);
+                visualizer.Image = image;
+                visualizers.Add(image.DatabaseIndex, visualizer);
+                Debug.Log("VISUALIZER ADDED");
+            }
+            //if tracking has stopped and will never resume
+            else if ((visualizer != null && image.TrackingState == TrackingState.Stopped)/* || (visualizer != null && image.TrackingMethod == AugmentedImageTrackingMethod.NotTracking)*/)
+            {
+                visualizers.Remove(image.DatabaseIndex);
+                Destroy(visualizer.transform.parent.gameObject);    //destroy visualizer
+                Debug.Log("VISUALIZER DESTROYED");
+            }
+            Debug.Log("ERROR, no visualizer was added");
+        }
+
+
 
         // If the origin anchor has not been placed yet, then update in resolving mode is
         // complete.
@@ -328,6 +350,16 @@ public class ARCoreController : MonoBehaviour
     {
         m_AnchorFinishedHosting = success;
         UIController.OnAnchorHosted(success, response);
+
+        //if expedition is set and hosted, disable PlaneFinding Mode
+        if (success)
+        {
+            arCoreSession.SessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Disabled;
+            //    foreach(GameObject gameObject in ARCoreWorldOriginHelper.VisualizedPlanes)
+            //    {
+            //        gameObject.SetActive(false);
+            //    }
+        }
     }
 
     /// <summary>
@@ -494,13 +526,14 @@ public class ARCoreController : MonoBehaviour
     {
         _ResetStatus();
         //TODO: does it work??
-        //--> ResetARSession();
+        ResetARSession();
         ARCoreRoot.SetActive(false);
     }
 
     public void ResetARSession()
     {
         ARCoreSessionConfig arCoreSessionConfig = arCoreSession.SessionConfig;
+        arCoreSessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Horizontal;
         Destroy(arCoreSession);
         //yield return null ??
         arCoreSession = ARCoreDevice.AddComponent<ARCoreSession>();

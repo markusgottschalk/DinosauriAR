@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: DinosauriARSessionConfig
   m_EditorClassIdentifier: 
   MatchCameraFramerate: 1
-  PlaneFindingMode: 1
+  PlaneFindingMode: 2
   LightEstimationMode: 3
   EnableCloudAnchor: 1
-  AugmentedImageDatabase: {fileID: 11400000, guid: c29544c997329934fb2bc668676d4c19,
+  AugmentedImageDatabase: {fileID: 11400000, guid: fad83fcc090f9b042a24674b81b8d3a0,
     type: 2}
   CameraFocusMode: 1
   AugmentedFaceMode: 0

@@ -64,6 +64,9 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         private Transform m_AnchorTransform;
 
+        [HideInInspector]
+        public List<GameObject> VisualizedPlanes = new List<GameObject>();
+
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
@@ -88,6 +91,7 @@ namespace GoogleARCore.Examples.CloudAnchors
                 GameObject planeObject = Instantiate(
                     DetectedPlanePrefab, worldPose.position, worldPose.rotation, transform);
                 planeObject.GetComponent<DetectedPlaneVisualizer>().Initialize(m_NewPlanes[i]);
+                VisualizedPlanes.Add(planeObject);
 
                 if (!m_IsOriginPlaced)
                 {
