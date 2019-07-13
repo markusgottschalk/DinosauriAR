@@ -64,9 +64,6 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         private Transform m_AnchorTransform;
 
-        [HideInInspector]
-        public List<GameObject> VisualizedPlanes = new List<GameObject>();
-
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
@@ -78,7 +75,7 @@ namespace GoogleARCore.Examples.CloudAnchors
                 return;
             }
 
-            Pose worldPose = _WorldToAnchorPose(Pose.identity);
+            Pose worldPose = WorldToAnchorPose(Pose.identity);
 
             // Iterate over planes found in this frame and instantiate corresponding GameObjects to
             // visualize them.
@@ -91,7 +88,6 @@ namespace GoogleARCore.Examples.CloudAnchors
                 GameObject planeObject = Instantiate(
                     DetectedPlanePrefab, worldPose.position, worldPose.rotation, transform);
                 planeObject.GetComponent<DetectedPlaneVisualizer>().Initialize(m_NewPlanes[i]);
-                VisualizedPlanes.Add(planeObject);
 
                 if (!m_IsOriginPlaced)
                 {
@@ -122,7 +118,7 @@ namespace GoogleARCore.Examples.CloudAnchors
 
             m_AnchorTransform = anchorTransform;
 
-            Pose worldPose = _WorldToAnchorPose(new Pose(ARCoreDeviceTransform.position,
+            Pose worldPose = WorldToAnchorPose(new Pose(ARCoreDeviceTransform.position,
                                                          ARCoreDeviceTransform.rotation));
             ARCoreDeviceTransform.SetPositionAndRotation(worldPose.position, worldPose.rotation);
 
@@ -154,7 +150,7 @@ namespace GoogleARCore.Examples.CloudAnchors
             bool foundHit = Frame.Raycast(x, y, filter, out hitResult);
             if (foundHit)
             {
-                Pose worldPose = _WorldToAnchorPose(hitResult.Pose);
+                Pose worldPose = WorldToAnchorPose(hitResult.Pose);
                 TrackableHit newHit = new TrackableHit(
                     worldPose, hitResult.Distance, hitResult.Flags, hitResult.Trackable);
                 hitResult = newHit;
@@ -168,7 +164,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         /// <returns>A pose in Unity world space.</returns>
         /// <param name="pose">A pose in Anchor-relative space.</param>
-        private Pose _WorldToAnchorPose(Pose pose)
+        private Pose WorldToAnchorPose(Pose pose)
         {
             if (!m_IsOriginPlaced)
             {

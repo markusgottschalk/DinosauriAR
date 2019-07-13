@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.43667555, g: 0.48427176, b: 0.5645241, a: 1}
+  m_IndirectSpecularColor: {r: 0.43667564, g: 0.48427135, b: 0.5645232, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1712,10 +1712,11 @@ MonoBehaviour:
   UIController: {fileID: 917955994}
   GameManager: {fileID: 1561894445}
   ARCoreRoot: {fileID: 1995596071}
-  ARCoreWorldOriginHelper: {fileID: 635649539}
+  ARCoreWorldOriginHelperClass: {fileID: 635649539}
   ARCoreDevice: {fileID: 261734897}
-  AugmentedImageVisualizer: {fileID: 814992073924286938, guid: 62b0defdf774a294f8f8be4c54ca4f8c,
+  ARImageVisualizer: {fileID: 814992073924286938, guid: 62b0defdf774a294f8f8be4c54ca4f8c,
     type: 3}
+  AugmentedImages: {fileID: 1224523212}
 --- !u!4 &265054091
 Transform:
   m_ObjectHideFlags: 0
@@ -3556,7 +3557,7 @@ GameObject:
   - component: {fileID: 635649538}
   - component: {fileID: 635649539}
   m_Layer: 0
-  m_Name: ARCore World Origin Helper
+  m_Name: ARCoreWorldOriginHelperClass
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3585,13 +3586,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 635649537}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da6a36370182b4b018a11b0c0722ddf2, type: 3}
+  m_Script: {fileID: 11500000, guid: 2ce770cb81ce23c488e302d87f62d1ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ARCoreDeviceTransform: {fileID: 261734896}
   DetectedPlanePrefab: {fileID: 1654175882956584, guid: 6a35c744e5010405c847fad90282d2be,
     type: 3}
   VisualizedPlanes: []
+  AugmentedImages: {fileID: 1224523213}
 --- !u!1 &661032163
 GameObject:
   m_ObjectHideFlags: 0
@@ -4605,6 +4607,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1995596072}
     m_Modifications:
+    - target: {fileID: 1248447649449928, guid: cf498fc35b538884db557f7a9a2c0ef9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4461716624848968, guid: cf498fc35b538884db557f7a9a2c0ef9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -6367,6 +6373,11 @@ MonoBehaviour:
   m_SpawnPrefabs:
   - {fileID: 1517545619891756, guid: c162c528b139240d0881c95be8c04f2b, type: 3}
   - {fileID: 2962376490741329013, guid: 4fc8f3fa26da07746907b7492acdec78, type: 3}
+  - {fileID: 7793315874735962177, guid: 7d950b2b7a4e331479796af6d284bfee, type: 3}
+  - {fileID: 5192442522352952916, guid: 0b36d979e5fc25a41a9bdabb20b7c5a2, type: 3}
+  - {fileID: 7242800526323953149, guid: 1c5806a8a268c6345809dbd451ee219e, type: 3}
+  - {fileID: 7795373320806234694, guid: e8d068b822a58da4cb9a9ffa5f47fed1, type: 3}
+  - {fileID: 6028560814686037079, guid: fcb9d5db16a19fb42848cd8b4270ed44, type: 3}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -7799,6 +7810,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1223434820}
   m_CullTransparentMesh: 0
+--- !u!1 &1224523212
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1224523213}
+  m_Layer: 0
+  m_Name: AugmentedImages
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1224523213
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224523212}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1250521395
 GameObject:
   m_ObjectHideFlags: 0

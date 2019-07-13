@@ -43,15 +43,15 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// A prefab for visualizing an AugmentedImage.
         /// </summary>
-        public AugmentedImageVisualizer AugmentedImageVisualizerPrefab;
+        public ARImageVisualizer AugmentedImageVisualizerPrefab;
 
         /// <summary>
         /// The overlay containing the fit to scan user guide.
         /// </summary>
         public GameObject FitToScanOverlay;
 
-        private Dictionary<int, AugmentedImageVisualizer> m_Visualizers
-            = new Dictionary<int, AugmentedImageVisualizer>();
+        private Dictionary<int, ARImageVisualizer> m_Visualizers
+            = new Dictionary<int, ARImageVisualizer>();
 
         private List<AugmentedImage> m_TempAugmentedImages = new List<AugmentedImage>();
 
@@ -75,7 +75,7 @@ namespace GoogleARCore.Examples.AugmentedImage
             // not previously have a visualizer. Remove visualizers for stopped images.
             foreach (var image in m_TempAugmentedImages)
             {
-                AugmentedImageVisualizer visualizer = null;
+                ARImageVisualizer visualizer = null;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
 
                 Debug.Log("Tracking State is " + image.TrackingState);
@@ -84,7 +84,7 @@ namespace GoogleARCore.Examples.AugmentedImage
                 {
                     // Create an anchor to ensure that ARCore keeps tracking this augmented image.
                     Anchor anchor = image.CreateAnchor(image.CenterPose);
-                    visualizer = (AugmentedImageVisualizer)Instantiate(
+                    visualizer = (ARImageVisualizer)Instantiate(
                         AugmentedImageVisualizerPrefab, anchor.transform);
                     visualizer.Image = image;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);

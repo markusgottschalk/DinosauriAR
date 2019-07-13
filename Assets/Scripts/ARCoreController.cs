@@ -22,7 +22,6 @@
 
 
 using GoogleARCore;
-using GoogleARCore.Examples.CloudAnchors;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -58,7 +57,7 @@ public class ARCoreController : MonoBehaviour
     /// The helper that will calculate the World Origin offset when performing a raycast or
     /// generating planes.
     /// </summary>
-    public ARCoreWorldOriginHelper ARCoreWorldOriginHelper;
+    public ARCoreWorldOriginHelperClass ARCoreWorldOriginHelperClass;
 
 
     /// <summary>
@@ -104,17 +103,22 @@ public class ARCoreController : MonoBehaviour
     /// <summary>
     /// A prefab for visualizing an AugmentedImage.
     /// </summary>
-    public AugmentedImageVisualizer AugmentedImageVisualizer;
+    public ARImageVisualizer ARImageVisualizer;
 
     /// <summary>
     /// Dictionary for existing visualizers for images.
     /// </summary>
-    private Dictionary<int, AugmentedImageVisualizer> visualizers = new Dictionary<int, AugmentedImageVisualizer>();
+    public Dictionary<int, ARImageVisualizer> visualizers = new Dictionary<int, ARImageVisualizer>();
 
     /// <summary>
     /// The images tracked in the current frame.
     /// </summary>
     private List<AugmentedImage> augmentedImages = new List<AugmentedImage>();
+
+    /// <summary>
+    /// GameObject for all augmented Images. Set offset when world anchor is placed.
+    /// </summary>
+    public GameObject AugmentedImages;
 
     /// <summary>
     /// The Network Manager.
@@ -177,48 +181,34 @@ public class ARCoreController : MonoBehaviour
         //Image augmentation. Get updated images for this frame.
         Session.GetTrackables<AugmentedImage>(augmentedImages, TrackableQueryFilter.Updated);
 
-        if(augmentedImages.Count != 0)
-        {
-            Debug.Log("An image was found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        }
-        else
-        {
-            //Debug.Log("NOOOOOO IMAGE");
-        }
-
         //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
         foreach(AugmentedImage image in augmentedImages)
         {
-            AugmentedImageVisualizer visualizer = null;
-            Debug.Log("ADd visualizer!");
-            //image.TrackingState = TrackingState.Tracking;
+            ARImageVisualizer visualizer = null;
 
             //when visualizer was added before
             visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-            if(visualizer == null)
-            {
-                Debug.Log("visualizer is null");
-            }
-
-            Debug.Log("Tracking State is " + image.TrackingState);
 
             //if no visualizer was found, add one
             if(visualizer == null && image.TrackingState == TrackingState.Tracking)
             {
-                Anchor anchor = image.CreateAnchor(image.CenterPose);
-                visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizer, anchor.transform);
+                visualizer = (ARImageVisualizer)Instantiate(ARImageVisualizer, image.CenterPose.position, image.CenterPose.rotation, AugmentedImages.transform);
+                Debug.LogError("Image found, visualizer added");
                 visualizer.Image = image;
                 visualizers.Add(image.DatabaseIndex, visualizer);
-                Debug.Log("VISUALIZER ADDED");
             }
             //if tracking has stopped and will never resume
-            else if ((visualizer != null && image.TrackingState == TrackingState.Stopped)/* || (visualizer != null && image.TrackingMethod == AugmentedImageTrackingMethod.NotTracking)*/)
+            else if ((visualizer != null && image.TrackingState == TrackingState.Stopped))
             {
                 visualizers.Remove(image.DatabaseIndex);
                 Destroy(visualizer.transform.parent.gameObject);    //destroy visualizer
-                Debug.Log("VISUALIZER DESTROYED");
             }
-            Debug.Log("ERROR, no visualizer was added");
+
+            if(visualizer != null)
+            {
+                //always give the CentralImagePose to visualizer for the correct position
+                visualizer.SetTransform(image.CenterPose);
+            }
         }
 
 
@@ -241,7 +231,7 @@ public class ARCoreController : MonoBehaviour
         m_LastHitPose = null;
 
         // Raycast against the location the player touched to search for planes.
-        if (ARCoreWorldOriginHelper.Raycast(touch.position.x, touch.position.y,
+        if (ARCoreWorldOriginHelperClass.Raycast(touch.position.x, touch.position.y,
                 TrackableHitFlags.PlaneWithinPolygon, out arcoreHitResult))
         {
             m_LastHitPose = arcoreHitResult.Pose;
@@ -285,7 +275,7 @@ public class ARCoreController : MonoBehaviour
 
         m_IsOriginPlaced = true;
 
-        ARCoreWorldOriginHelper.SetWorldOrigin(anchorTransform);
+        ARCoreWorldOriginHelperClass.SetWorldOrigin(anchorTransform);
     }
 
     /// <summary>
@@ -352,14 +342,14 @@ public class ARCoreController : MonoBehaviour
         UIController.OnAnchorHosted(success, response);
 
         //if expedition is set and hosted, disable PlaneFinding Mode
-        if (success)
-        {
-            arCoreSession.SessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Disabled;
+        //if (success)
+        //{
+            //arCoreSession.SessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Disabled;
             //    foreach(GameObject gameObject in ARCoreWorldOriginHelper.VisualizedPlanes)
             //    {
             //        gameObject.SetActive(false);
             //    }
-        }
+        //}
     }
 
     /// <summary>
@@ -409,7 +399,7 @@ public class ARCoreController : MonoBehaviour
     private void _InstantiateAnchor()
     {
         // The anchor will be spawned by the host, so no networking Command is needed.
-        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
+        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>()
             .SpawnAnchor(Vector3.zero, Quaternion.identity, m_WorldOriginAnchor);
     }
 
@@ -419,7 +409,7 @@ public class ARCoreController : MonoBehaviour
     private void _InstantiateStar()
     {
         // Star must be spawned in the server so a networking Command is used.
-        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerController>()
+        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>()
             .CmdSpawnStar(m_LastHitPose.Value.position, m_LastHitPose.Value.rotation);
     }
 

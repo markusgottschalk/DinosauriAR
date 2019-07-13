@@ -62,7 +62,7 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// </summary>
         public void Update()
         {
-            if (Image == null || Image.TrackingState != TrackingState.Tracking)
+            if (Image == null || Image.TrackingState != TrackingState.Tracking || Image.TrackingMethod != AugmentedImageTrackingMethod.FullTracking)
             {
                 FrameLowerLeft.SetActive(false);
                 FrameLowerRight.SetActive(false);
