@@ -10,23 +10,13 @@ public class PlayerObject : NetworkBehaviour
 
     private GameObject firstPersonCamera = null;
 
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (!hasAuthority)
-        {
-            return;
-        }
-
-    }
-
     /// <summary>
     /// Attach this player object to the first person camera, ONLY on own client/when you have authority!
     /// The transform component will be propagated through the NetworkTransform component.
     /// </summary>
     public override void OnStartAuthority()
     {
+        gameObject.name = "PlayerObject";
         firstPersonCamera = GameObject.Find("First Person Camera");
         transform.parent = firstPersonCamera.transform;
         transform.localPosition = Vector3.zero;

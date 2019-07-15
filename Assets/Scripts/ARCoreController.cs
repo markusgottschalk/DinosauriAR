@@ -193,7 +193,7 @@ public class ARCoreController : MonoBehaviour
             if(visualizer == null && image.TrackingState == TrackingState.Tracking)
             {
                 visualizer = (ARImageVisualizer)Instantiate(ARImageVisualizer, image.CenterPose.position, image.CenterPose.rotation, AugmentedImages.transform);
-                Debug.LogError("Image found, visualizer added");
+                Debug.Log("Image found, visualizer added");
                 visualizer.Image = image;
                 visualizers.Add(image.DatabaseIndex, visualizer);
             }
@@ -453,11 +453,6 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     private void _UpdateApplicationLifecycle()
     {
-        //if (!m_MatchStarted && NetworkManagerController.IsClientConnected())
-        //{
-        //    m_MatchStarted = true;
-        //}
-
         //Screen of smartphone should never sleep when expedition is active.
         var sleepTimeout = SleepTimeout.NeverSleep;
         // Only allow the screen to sleep when not tracking.
@@ -483,13 +478,6 @@ public class ARCoreController : MonoBehaviour
         {
             _QuitWithReason("ARCore hat ein Verbindungsproblem. Bitte starte die App erneut.");
         }
-        //else if (m_MatchStarted && !NetworkManagerController.IsClientConnected())
-        //{
-        //    UIController.ShowMessage(
-        //        "Das Netzwerk ist nicht mehr vorhanden. Bitte starte die App erneut.");
-        //    m_IsQuitting = true;
-        //    Invoke("_DoQuit", 5.0f);
-        //}
     }
 
     /// <summary>
@@ -504,7 +492,6 @@ public class ARCoreController : MonoBehaviour
         UIController.ShowMessage(reason);
         m_IsQuitting = true;
         Invoke("_DoQuit", 5.0f);
-        GameManager.LeaveApp(); //TODO: besser nur Spiel und AR-modus zu beenden?!
     }
 
     private void _DoQuit()

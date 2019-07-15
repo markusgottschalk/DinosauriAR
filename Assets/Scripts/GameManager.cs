@@ -87,6 +87,6 @@ public class GameManager : MonoBehaviour
 
     public void LeaveApp()
     {
-        Application.Quit();
+        Application.Quit();//TODO: besser nur Spiel und AR-modus zu beenden?!
     }
 }

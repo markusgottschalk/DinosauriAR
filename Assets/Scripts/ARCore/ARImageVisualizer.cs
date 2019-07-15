@@ -21,7 +21,7 @@ public class ARImageVisualizer : MonoBehaviour
     {
         //ARCoreWorldOriginHelperClass = GameObject.Find("ARCoreWorldOriginHelperClass").GetComponent<ARCoreWorldOriginHelperClass>();
         localPlayer = GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>();
-        Debug.LogError("Visualizer started");
+        Debug.Log("Visualizer started");
     }
 
     void Update()
@@ -30,6 +30,7 @@ public class ARImageVisualizer : MonoBehaviour
         //if no prefab was already created, create one
         if (augmentedObject == null && !requestToSpawn)
         {
+            Debug.Log("Visualizer wants to spawn tool");
             localPlayer.CmdSpawnTool(Image.DatabaseIndex);      //Send request for Instantiating tool to server
             requestToSpawn = true;
             return;
@@ -44,11 +45,19 @@ public class ARImageVisualizer : MonoBehaviour
         //if no image is tracked, disable visualized object -> send a request to the server which propagates the request to all clients
         if (Image == null || Image.TrackingState != TrackingState.Tracking || Image.TrackingMethod != AugmentedImageTrackingMethod.FullTracking)
         {
-            localPlayer.CmdIsToolActive(false, augmentedObjectNetworkID);
+            //if augmented object was prevously enabled -> disable it
+            if (augmentedObject.activeSelf)
+            {
+                localPlayer.CmdSetGameObjectState(augmentedObjectNetworkID, false);
+            }
             return;
         }
 
-        localPlayer.CmdIsToolActive(true, augmentedObjectNetworkID);
+        //if augmented object was prevously disabled -> enable it
+        if (!augmentedObject.activeSelf)
+        {
+            localPlayer.CmdSetGameObjectState(augmentedObjectNetworkID, true);
+        }
     }
 
     /// <summary>

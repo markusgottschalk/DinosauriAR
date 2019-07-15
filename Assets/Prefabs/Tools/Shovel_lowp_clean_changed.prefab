@@ -195,6 +195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToolType: 1
+  imageDatabaseindex: 0
 --- !u!54 &5148582719062474173
 Rigidbody:
   m_ObjectHideFlags: 0

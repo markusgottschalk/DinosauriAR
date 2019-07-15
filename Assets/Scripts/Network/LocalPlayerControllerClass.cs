@@ -85,6 +85,18 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning disable 618
         NetworkServer.Spawn(anchorObject);
 #pragma warning restore 618
+
+        //disable graphics of expedition/cloud anchor on all clients (but not the host) 
+#pragma warning disable 618
+        foreach (NetworkConnection client in NetworkServer.connections)
+#pragma warning restore 618
+        {
+            if (client != connectionToClient)
+            {
+                TargetSetCloudAnchorGraphicState(client, anchorObject, false);
+            }
+        }
+        
     }
 
     /// <summary>
@@ -129,7 +141,7 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning restore 618
     public void CmdSpawnTool(int imageDatabaseindex)
     {
-        Debug.LogError("Server: Request to spawn tool for visualizer");
+        Debug.Log("Server: Request to spawn tool for visualizer");
         GameObject tool = Instantiate(VisualizedObjects[imageDatabaseindex]);
         tool.GetComponent<Tool>().imageDatabaseindex = imageDatabaseindex;
 #pragma warning disable 618
@@ -139,38 +151,52 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 
 
     /// <summary>
-    /// Set a tool active/inactive.
+    /// Set a gameobject active/inactive.
     /// </summary>
-    /// <param name="active">The state the tool should have</param>
-    /// <param name="networkID">The Network id of the tool</param>
+    /// <param name="networkID">The Network id of the gameobject</param>
+    /// <param name="active">The state the gameobject should have</param>
 #pragma warning disable 618
     [Command]
-    public void CmdIsToolActive(bool active, NetworkInstanceId networkID)
+    public void CmdSetGameObjectState(NetworkInstanceId networkID, bool active)
 #pragma warning restore 618
     {
 #pragma warning disable 618
-        GameObject tool = NetworkServer.FindLocalObject(networkID); //Find the local tool object
+        GameObject gameobject = NetworkServer.FindLocalObject(networkID); //Find the local gameobject
 #pragma warning restore 618
-        Debug.Log("Server: tool object network id: " + networkID + ", is tool == null?: " + (tool == null));
-        tool.SetActive(active);                                     //set it to active/inactive
-        RpcIsToolActive(active, tool);                         //propagate it to all clients
+        Debug.Log("Server: Tool object network id: " + networkID + ", set to " + active);
+        gameobject.SetActive(active);                                     //set it to active/inactive
+        RpcSetGameObjectState(gameobject, active);                         //propagate it to all clients
     }
 
     /// <summary>
-    /// Propagates the state of a tool to all clients
+    /// Propagates the state of a gameobject to all clients
     /// </summary>
-    /// <param name="active">The state the tool should have</param>
-    /// <param name="networkID">The Network id of the tool</param>
+    /// <param name="gameobject">The gameobject to enable/disable</param>
+    /// <param name="active">The state the gameobject should have</param>
 #pragma warning disable 618
     [ClientRpc]
-    public void RpcIsToolActive(bool active, /*NetworkInstanceId networkID*/GameObject tool)
+    public void RpcSetGameObjectState(GameObject gameobject, bool active)
 #pragma warning restore 618
     {
+        gameobject.SetActive(active);                                         //each Client finds the local gameobject with the given network id and sets it active/inactive
+        
+    }
+
+    /// <summary>
+    /// Enables/disables the graphics of the expedition/cloud anchor on a specific client
+    /// </summary>
+    /// <param name="client">The target client</param>
+    /// <param name="anchor">The expedition/cloud anchor object</param>
+    /// <param name="active">The state the expedition/cloud anchor should have</param>
 #pragma warning disable 618
-        //GameObject tool = ClientScene.FindLocalObject(networkID);     //each Client finds the local tool with the given network id...
-        //Debug.Log("Clients: tool object network id: " + networkID + ", is tool == null?: " + (tool == null));
+    [TargetRpc]
+    public void TargetSetCloudAnchorGraphicState(NetworkConnection client, GameObject anchor, bool active)
 #pragma warning restore 618
-        tool.SetActive(active);                                         //...and sets it active/inactive
+    {
+        foreach (Transform child in anchor.transform)
+        {
+            child.gameObject.SetActive(active);
+        }
     }
 }
 

@@ -12,13 +12,16 @@ public class Tool : NetworkBehaviour
     private ARCoreController arCoreController;
 
     [HideInInspector]
+#pragma warning disable 618
+    [SyncVar]
+#pragma warning restore 618
     public int imageDatabaseindex;
 
 
     public override void OnStartAuthority()
     {
         //Set the own tool object spawned by the server as a child of the corresponding visualizer
-        Debug.LogError("Tool has spawned");
+        Debug.Log("Tool has spawned");
         arCoreController = GameObject.Find("ARCoreController").GetComponent<ARCoreController>();
         arImageVisualizer = arCoreController.visualizers[imageDatabaseindex];
 
@@ -41,4 +44,6 @@ public class Tool : NetworkBehaviour
         transform.localRotation = Quaternion.identity;
         arImageVisualizer.ToolHasSpawned();
     }
+
+    //TODO: if hasAuthority -> collider
 }

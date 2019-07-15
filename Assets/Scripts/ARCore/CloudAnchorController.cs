@@ -169,9 +169,15 @@ public class CloudAnchorController : NetworkBehaviour
     /// <param name="anchorTransform">Transform of the resolved Cloud Anchor.</param>
     private void _OnResolved(Transform anchorTransform)
     {
-        var cloudAnchorController = GameObject.Find("ARCoreController")
+        var ARCoreController = GameObject.Find("ARCoreController")
                                               .GetComponent<ARCoreController>();
-        cloudAnchorController.SetWorldOrigin(anchorTransform);
+        ARCoreController.SetWorldOrigin(anchorTransform);
+
+        //if cloud anchor is resolved, show the graphics
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(true);
+        }
     }
 
     /// <summary>
