@@ -10,6 +10,10 @@ public class Tool : NetworkBehaviour
     public ToolType ToolType;
     private ARImageVisualizer arImageVisualizer;
     private ARCoreController arCoreController;
+    private GameManager gameManager;
+
+    //tools work only for one block
+    private bool isUsed;
 
     [HideInInspector]
 #pragma warning disable 618
@@ -25,14 +29,20 @@ public class Tool : NetworkBehaviour
         arCoreController = GameObject.Find("ARCoreController").GetComponent<ARCoreController>();
         arImageVisualizer = arCoreController.visualizers[imageDatabaseindex];
 
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
         switch (imageDatabaseindex)
         {
-            case 0:
-            case 1: ToolType = ToolType.ROCKHAMMER;
+            case 0: ToolType = ToolType.BRUSH;
                 break;
-            case 2: ToolType = ToolType.SENSOR;
+            case 1:
+            case 2: ToolType = ToolType.ROCKHAMMER;
                 break;
-            case 3: ToolType = ToolType.SHOVEL;
+            case 3: ToolType = ToolType.SENSOR;
+                break;
+            case 4: ToolType = ToolType.SHOVEL;
+                break;
+            case 5: ToolType = ToolType.SHOVEL;
                 break;
             default:
                 Debug.LogError("No Tooltype could be assigned.");
@@ -45,5 +55,42 @@ public class Tool : NetworkBehaviour
         arImageVisualizer.ToolHasSpawned();
     }
 
-    //TODO: if hasAuthority -> collider
+    /// <summary>
+    /// Checks the collisions. If the tool is not in use in another block, the client has authority, change status of block if this is the right tool. 
+    /// </summary>
+    /// <param name="other"></param>
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!isUsed)
+        {
+            isUsed = true;
+
+            if (hasAuthority)
+            {
+                if (other.CompareTag("Block"))
+                {
+                    Block block = other.gameObject.transform.parent.GetComponent<Block>();
+                    Debug.Log("Colliding with " + block.BlockMaterial);
+                    foreach(BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
+                    {
+                        if(block.BlockMaterial == blockMaterial)
+                        {
+                            Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + gameManager.toolsForBlocks[ToolType]);
+                            block.ChangeDestroyStatus(1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        isUsed = false;
+    }
+
+    //TODO: callback, if gameObject.activeSelf == false -> isUsed = false... (for when image is not detected while inside a block)
+
+
+    
 }

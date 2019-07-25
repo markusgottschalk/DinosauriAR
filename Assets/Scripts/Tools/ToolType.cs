@@ -2,4 +2,4 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ToolType { ROCKHAMMER, SHOVEL, SENSOR }
+public enum ToolType { ROCKHAMMER, SHOVEL, SENSOR, BRUSH }

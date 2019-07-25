@@ -184,6 +184,7 @@ public class ARCoreController : MonoBehaviour
         //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
         foreach(AugmentedImage image in augmentedImages)
         {
+            //Debug.Log("Image found, Tracking State: " + image.TrackingState);
             ARImageVisualizer visualizer = null;
 
             //when visualizer was added before
@@ -192,8 +193,8 @@ public class ARCoreController : MonoBehaviour
             //if no visualizer was found, add one
             if(visualizer == null && image.TrackingState == TrackingState.Tracking)
             {
+                Debug.Log("Add visualizer");
                 visualizer = (ARImageVisualizer)Instantiate(ARImageVisualizer, image.CenterPose.position, image.CenterPose.rotation, AugmentedImages.transform);
-                Debug.Log("Image found, visualizer added");
                 visualizer.Image = image;
                 visualizers.Add(image.DatabaseIndex, visualizer);
             }
@@ -289,7 +290,6 @@ public class ARCoreController : MonoBehaviour
             m_CurrentMode = ApplicationMode.Ready;
             _ResetStatus();
             Debug.Log("Reset ApplicationMode from Hosting to Ready.");
-            //TODO: no return; ??
         }
 
         ARCoreRoot.SetActive(true);
@@ -307,7 +307,6 @@ public class ARCoreController : MonoBehaviour
             m_CurrentMode = ApplicationMode.Ready;
             _ResetStatus();
             Debug.Log("Reset ApplicationMode from Resolving to Ready.");
-            //TODO: no return; ??
         }
 
         ARCoreRoot.SetActive(true);
@@ -388,7 +387,7 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     private void _OnDisconnectedFromServer()
     {
-        _QuitWithReason("Es ist ein Fehler aufgetreten. Bitte starte die Anwendung erneut.");
+        _QuitWithReason("Es ist ein Fehler mit dem Netzwerk aufgetreten. Bitte starte die Anwendung erneut.");
         Debug.LogError("Network session disconnected!");
     }
 

@@ -9,13 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7307901991986979973}
-  - component: {fileID: 5737573930584157929}
-  - component: {fileID: 9144852367804855224}
-  - component: {fileID: 6034966195009476186}
   - component: {fileID: 1203698781947599071}
   m_Layer: 0
   m_Name: RockBlock
-  m_TagString: Untagged
+  m_TagString: Block
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28,27 +25,84 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480095018486855568}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.56, y: 0.368, z: 0.896}
-  m_LocalScale: {x: 0.80212235, y: 0.357425, z: 0.49456376}
-  m_Children: []
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 2418034131445686676}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &5737573930584157929
+--- !u!114 &1203698781947599071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480095018486855568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb25abe5b033ce04d93faa002824fb4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bonesAvailable: 0
+  blockMaterial: 1
+  crackMaterials:
+  - {fileID: 2100000, guid: c34ba9205e978ac419338aad892d16c4, type: 2}
+  - {fileID: 2100000, guid: 708a539aa5cb5934f8816a3475f3a075, type: 2}
+  - {fileID: 2100000, guid: 16470e92d9692d441be0ab1b921b85ac, type: 2}
+  - {fileID: 2100000, guid: e121b4f4e371f1b4da6e31e42b69afe4, type: 2}
+  boneMaterials:
+  - {fileID: 2100000, guid: 938deabbf86cd9e41bf103b745b406af, type: 2}
+  - {fileID: 2100000, guid: 08d11466b6640e9449e72dc04a2159ff, type: 2}
+  maxStatus: 4
+--- !u!1 &3896002046493359684
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2418034131445686676}
+  - component: {fileID: 6037991250857255983}
+  - component: {fileID: 386039166729862303}
+  - component: {fileID: 482062524830287112}
+  m_Layer: 0
+  m_Name: Graphics
+  m_TagString: Block
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2418034131445686676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896002046493359684}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7307901991986979973}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &6037991250857255983
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 480095018486855568}
+  m_GameObject: {fileID: 3896002046493359684}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &9144852367804855224
+--- !u!23 &386039166729862303
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 480095018486855568}
+  m_GameObject: {fileID: 3896002046493359684}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -60,6 +114,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: c34ba9205e978ac419338aad892d16c4, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -79,31 +134,16 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &6034966195009476186
+--- !u!65 &482062524830287112
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 480095018486855568}
+  m_GameObject: {fileID: 3896002046493359684}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1203698781947599071
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 480095018486855568}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb25abe5b033ce04d93faa002824fb4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BonesAvailable: 0
-  BlockMaterial: 1
-  maxStatus: 3

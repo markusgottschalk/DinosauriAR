@@ -28,6 +28,8 @@ public class GameManager : MonoBehaviour
     public UIController UIController;
     public NetworkManagerController NetworkManagerController;
 
+    public Dictionary<ToolType, List<BlockMaterial>> toolsForBlocks;
+
 
     void Start()
     {
@@ -40,6 +42,12 @@ public class GameManager : MonoBehaviour
 
         expeditions.Add(expedition1);
         UICamera.SetActive(true);
+
+        toolsForBlocks = new Dictionary<ToolType, List<BlockMaterial>>();
+        toolsForBlocks.Add(ToolType.ROCKHAMMER, new List<BlockMaterial>() { BlockMaterial.ROCK });
+        toolsForBlocks.Add(ToolType.SHOVEL, new List<BlockMaterial>() { BlockMaterial.SAND });
+        toolsForBlocks.Add(ToolType.SENSOR, new List<BlockMaterial>() { BlockMaterial.NONE });
+        toolsForBlocks.Add(ToolType.BRUSH, new List<BlockMaterial>() { BlockMaterial.SAND, BlockMaterial.ROCK });
     }
 
     void Update()

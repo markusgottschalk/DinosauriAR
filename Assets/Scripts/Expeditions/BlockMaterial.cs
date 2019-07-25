@@ -2,4 +2,4 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BlockMaterial { SAND, ROCK }
+public enum BlockMaterial { SAND, ROCK, NONE }

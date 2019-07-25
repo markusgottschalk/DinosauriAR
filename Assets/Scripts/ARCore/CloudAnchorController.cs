@@ -193,4 +193,25 @@ public class CloudAnchorController : NetworkBehaviour
         }
     }
 
+#pragma warning disable 618
+    [Command]
+#pragma warning restore 618
+    public void CmdSetBlock(string name, int currentStatus)
+    {
+        GameObject block = transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().CurrentStatus = currentStatus;
+        RpcChangeExpedition(name, currentStatus);
+    }
+
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeExpedition(string name, int currentStatus)
+    {
+        Transform block = transform.FindDeepChild(name);
+        if(block != null)
+        {
+            block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
+        }
+    }
 }
