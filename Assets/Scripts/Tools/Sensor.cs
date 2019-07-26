@@ -66,12 +66,12 @@ public class Sensor : Tool
                 {
                     //set length of line renderer to distance of ray until hit -> line renderer won't go through objects
                     sensorAnalyzerLine.SetPosition(1, new Vector3(0, 0, hit.distance*9));
-                    Debug.Log("SensorAnalyzerLine length: " + hit.distance);
+                    //Debug.Log("SensorAnalyzerLine length: " + hit.distance);
 
                     if (hit.transform.CompareTag("Block"))
                     {
-                        Block block = hit.transform.GetComponent<Block>();
-                        block.PercentAnalyzed += 1;     //+1% analyzed with every tick
+                        Block block = hit.transform.parent.GetComponent<Block>();
+                        block.ChangePercentAnalyzed(1);     //+1% analyzed with every tick
                         analyzerStatus.fillAmount = (float)block.PercentAnalyzed / (float)100;
 
                         //if block is completely analyzed

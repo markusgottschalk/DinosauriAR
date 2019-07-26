@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb25abe5b033ce04d93faa002824fb4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explorationStatusMax: 10
+  lerpTime: 3
   bonesAvailable: 0
   blockMaterial: 0
   crackMaterials:
@@ -54,6 +56,7 @@ MonoBehaviour:
   boneMaterials:
   - {fileID: 2100000, guid: 938deabbf86cd9e41bf103b745b406af, type: 2}
   - {fileID: 2100000, guid: 08d11466b6640e9449e72dc04a2159ff, type: 2}
+  - {fileID: 2100000, guid: a8335b04da287094eada780b6ee09de0, type: 2}
   maxStatus: 4
 --- !u!1 &3023820291023384294
 GameObject:
@@ -114,7 +117,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 531da87ff3a356b4ab66de3e6c75d180, type: 2}
-  - {fileID: 0}
+  - {fileID: 2100000, guid: a8335b04da287094eada780b6ee09de0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

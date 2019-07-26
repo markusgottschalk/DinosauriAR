@@ -10,7 +10,9 @@ public class Tool : NetworkBehaviour
     public ToolType ToolType;
     private ARImageVisualizer arImageVisualizer;
     private ARCoreController arCoreController;
-    private GameManager gameManager;
+
+    [HideInInspector]
+    public GameManager gameManager;
 
     //tools work only for one block
     private bool isUsed;
@@ -70,12 +72,12 @@ public class Tool : NetworkBehaviour
                 if (other.CompareTag("Block"))
                 {
                     Block block = other.gameObject.transform.parent.GetComponent<Block>();
-                    Debug.Log("Colliding with " + block.BlockMaterial);
+                    //Debug.Log("Colliding with " + block.BlockMaterial);
                     foreach(BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
                     {
-                        if(block.BlockMaterial == blockMaterial)
+                        //Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + blockMaterial);
+                        if (block.BlockMaterial == blockMaterial)
                         {
-                            Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + gameManager.toolsForBlocks[ToolType]);
                             block.ChangeDestroyStatus(1);
                         }
                     }
@@ -89,8 +91,9 @@ public class Tool : NetworkBehaviour
         isUsed = false;
     }
 
-    //TODO: callback, if gameObject.activeSelf == false -> isUsed = false... (for when image is not detected while inside a block)
-
-
+    public void ChangeIsUsed(bool state)
+    {
+        isUsed = state;
+    }
     
 }

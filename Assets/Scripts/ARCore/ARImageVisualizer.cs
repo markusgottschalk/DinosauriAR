@@ -48,6 +48,7 @@ public class ARImageVisualizer : MonoBehaviour
             //if augmented object was prevously enabled -> disable it
             if (augmentedObject.activeSelf)
             {
+                augmentedObject.GetComponent<Tool>().ChangeIsUsed(false);       //change "isUsed" to false when augmentedObject is not in sight of camera (for when image is not detected while inside a block)
                 localPlayer.CmdSetGameObjectState(augmentedObjectNetworkID, false);
             }
             return;

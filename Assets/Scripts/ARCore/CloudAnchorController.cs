@@ -193,6 +193,11 @@ public class CloudAnchorController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Command to change status of block. 
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status of the block which should be passed onto the clients.</param>
 #pragma warning disable 618
     [Command]
 #pragma warning restore 618
@@ -200,18 +205,90 @@ public class CloudAnchorController : NetworkBehaviour
     {
         GameObject block = transform.FindDeepChild(name).gameObject;
         block.GetComponent<Block>().CurrentStatus = currentStatus;
-        RpcChangeExpedition(name, currentStatus);
+        //Debug.Log("SERVER: change " + name + " to " + currentStatus);
+        RpcChangeBlockStatus(name, currentStatus);
     }
 
+    /// <summary>
+    /// The RPC to change the status of a block on every client.
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status of the block.</param>
 #pragma warning disable 618
     [ClientRpc]
 #pragma warning restore 618
-    public void RpcChangeExpedition(string name, int currentStatus)
-    {
+    public void RpcChangeBlockStatus(string name, int currentStatus)
+    { 
+        //Debug.Log("ONCLIENT, change "+name);
         Transform block = transform.FindDeepChild(name);
         if(block != null)
         {
+            //Debug.Log(name + " changed to " + currentStatus);
             block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
+        }
+    }
+
+    /// <summary>
+    /// Command to change status (percent analyzed) of block. 
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="newStatus">The new status (percent analyzed) of the block which should be passed onto the clients.</param>
+#pragma warning disable 618
+    [Command]
+#pragma warning restore 618
+    public void CmdSetBlockPercentAnalyzed(string name, int newStatus)
+    {
+        GameObject block = transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().PercentAnalyzed = newStatus;
+        RpcChangeBlockPercentAnalyzed(name, newStatus);
+    }
+
+    /// <summary>
+    /// The RPC to change the status (percent analyzed) of a block on every client.
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status (percent analyzed) of the block.</param>
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeBlockPercentAnalyzed(string name, int percentAnalyzed)
+    {
+        Transform block = transform.FindDeepChild(name);
+        if (block != null)
+        {
+            block.gameObject.GetComponent<Block>().PercentAnalyzed = percentAnalyzed;
+        }
+    }
+
+    /// <summary>
+    /// Command to change status (exploration status) of block. 
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="newStatus">The new status (exploration status) of the block which should be passed onto the clients.</param>
+#pragma warning disable 618
+    [Command]
+#pragma warning restore 618
+    public void CmdSetBlockExplorationStatus(string name, int newStatus)
+    {
+        GameObject block = transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().ExplorationStatus = newStatus;
+        RpcChangeBlockExplorationStatus(name, newStatus);
+    }
+
+    /// <summary>
+    /// The RPC to change the status (exploration status) of a block on every client.
+    /// </summary>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status (exploration status) of the block.</param>
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeBlockExplorationStatus(string name, int explorationStatus)
+    {
+        Transform block = transform.FindDeepChild(name);
+        if (block != null)
+        {
+            block.gameObject.GetComponent<Block>().ExplorationStatus = explorationStatus;
         }
     }
 }

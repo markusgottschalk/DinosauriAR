@@ -6,23 +6,32 @@ public class Block : MonoBehaviour
 {
     private CloudAnchorController rootAnchorController;
 
+    private Material[] currentMaterials;
+
     /// <summary>
     /// The rate with which the block will disappear when the brush is used. Depends on localScale.y
     /// </summary>
     private float explorationRate;
 
+    [SerializeField]
+    private int explorationStatusMax;
+    [SerializeField]
+    private float lerpTime;
+
     /// <summary>
     /// The exploration status when the brush is used. Will shrink to the ground and gets destroyed when 0 is reached.
     /// </summary>
-    private int explorationStatus;
+    private int explorationStatus = 0;
     public int ExplorationStatus
     {
         get { return explorationStatus; }
         set
         { 
-            explorationStatus = Mathf.Clamp(value, 0, 150);
-            gameObject.transform.localScale.Set(gameObject.transform.localScale.x, gameObject.transform.localScale.y - explorationRate, gameObject.transform.localScale.z);
-            if (explorationStatus == 150)
+            explorationStatus = Mathf.Clamp(value, 0, explorationStatusMax);
+            Vector3 newScale = new Vector3(gameObject.transform.localScale.x, gameObject.transform.localScale.y - explorationRate, gameObject.transform.localScale.z);
+            StartCoroutine(lerpToNewScale(gameObject.transform.localScale, newScale));
+            //gameObject.transform.localScale = new Vector3(gameObject.transform.localScale.x, gameObject.transform.localScale.y - explorationRate, gameObject.transform.localScale.z);
+            if (explorationStatus == explorationStatusMax)
             {
                 destroy(true);
             }
@@ -42,7 +51,7 @@ public class Block : MonoBehaviour
     /// <summary>
     /// The analyze status of the block. If 100% is reached, show whether bones are available or not. 
     /// </summary>
-    private int percentAnalyzed;
+    private int percentAnalyzed = 0;
     public int PercentAnalyzed
     {
         get { return percentAnalyzed; }
@@ -54,11 +63,11 @@ public class Block : MonoBehaviour
                 Analyzed = true;
                 if (BonesAvailable)
                 {
-                    transform.GetChild(0).GetComponent<Renderer>().materials[1] = boneMaterials[0];     //material 2 is for available bones
+                    changeMaterial(null, boneMaterials[0]);     //material 2 is for available bones
                 }
                 else
                 {
-                    transform.GetChild(0).GetComponent<Renderer>().materials[1] = boneMaterials[1];
+                    changeMaterial(null, boneMaterials[1]);
                 }
                 
             }
@@ -94,7 +103,7 @@ public class Block : MonoBehaviour
     private List<Material> crackMaterials = default;
 
     /// <summary>
-    /// The materials which show whether there is a bone inside or not. Material 1: bone, Material 2: no bone.
+    /// The materials which show whether there is a bone inside or not. Material 0: bone, Material 1: no bone, Material 2: neutralBone.
     /// </summary>
     [SerializeField]
     private List<Material> boneMaterials = default;
@@ -124,7 +133,7 @@ public class Block : MonoBehaviour
 
                     //render block differently (with cracks -> the higher the current status, the more cracks appear)
                     //the first material is the one for cracks
-                    transform.GetChild(0).GetComponent<Renderer>().materials[0] = crackMaterials[CurrentStatus];
+                    changeMaterial(crackMaterials[CurrentStatus], null);
                     //Debug.Log("Block: " + name + ", current block material: " + this.GetComponent<Renderer>().material.name + " material: " + BlockMaterial);
                 }
         }
@@ -133,14 +142,13 @@ public class Block : MonoBehaviour
 
     void Start()
     {
-        transform.GetChild(0).GetComponent<Renderer>().materials[0] = crackMaterials[CurrentStatus];
+        currentMaterials = transform.GetChild(0).GetComponent<MeshRenderer>().materials;
+        changeMaterial(crackMaterials[CurrentStatus], boneMaterials[2]);
 
         rootAnchorController = transform.root.GetComponent<CloudAnchorController>();
         //Debug.Log(name + " has BlockMaterial: " + BlockMaterial);
-        PercentAnalyzed = 0;
 
-        ExplorationStatus = 0;
-        explorationRate = gameObject.transform.localScale.y / 150;
+        explorationRate = gameObject.transform.localScale.y / (float)explorationStatusMax;
     }
 
     /// <summary>
@@ -162,7 +170,47 @@ public class Block : MonoBehaviour
 
     public void ChangeDestroyStatus(int statusChange)
     {
+        //Debug.Log("BLOCK: change current status from "+ CurrentStatus+" to "+ (CurrentStatus+statusChange));
         rootAnchorController.CmdSetBlock(this.gameObject.name, CurrentStatus + statusChange);   //send already changed status to server
+    }
+
+    public void ChangePercentAnalyzed(int statusChange)
+    {
+        rootAnchorController.CmdSetBlockPercentAnalyzed(this.gameObject.name, PercentAnalyzed + statusChange);
+    }
+
+    public void ChangeExplorationStatus(int statusChange)
+    {
+        rootAnchorController.CmdSetBlockExplorationStatus(this.gameObject.name, ExplorationStatus + statusChange);
+    }
+
+    private void changeMaterial(Material firstMaterial, Material secondMaterial)
+    {
+        if(firstMaterial == null)
+        {
+            firstMaterial = currentMaterials[0];
+        }
+        if(secondMaterial == null)
+        {
+            secondMaterial = currentMaterials[1];
+        }
+        currentMaterials[0] = firstMaterial;
+        currentMaterials[1] = secondMaterial;
+        transform.GetChild(0).GetComponent<MeshRenderer>().materials = currentMaterials;
+    }
+
+    private IEnumerator lerpToNewScale(Vector3 oldScale, Vector3 newScale)
+    {
+        float elapsedTime = 0;
+        while(elapsedTime < lerpTime)
+        {
+            gameObject.transform.localScale = Vector3.Lerp(oldScale, newScale, (elapsedTime / lerpTime));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        gameObject.transform.localScale = newScale;
+        yield return null;
     }
 
 }

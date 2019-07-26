@@ -4,15 +4,25 @@ using UnityEngine;
 
 public class Brush : Tool
 {
-    private GameManager gameManager;
+    public float SecondsToBrush;
+    private float timer = 0;
 
-    public override void OnStartAuthority()
+    /// <summary>
+    /// Override base methods. Brush should not crack the block...
+    /// </summary>
+    /// <param name="other"></param>
+    private void OnTriggerEnter(Collider other)
     {
-        base.OnStartAuthority();
-
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        
     }
 
+    /// <summary>
+    /// Checks the collisions. If the client has authority, change status of block if this is the right tool. 
+    /// </summary>
     private void OnTriggerStay(Collider other)
     {
         if (hasAuthority)
@@ -23,10 +33,15 @@ public class Brush : Tool
                 Debug.Log("Colliding with " + block.BlockMaterial);
                 foreach (BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
                 {
+                    //Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + blockMaterial);
                     if (block.BlockMaterial == blockMaterial)
                     {
-                        Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + gameManager.toolsForBlocks[ToolType]);
-                        block.ExplorationStatus += 1;
+                        timer += Time.deltaTime;
+                        if(timer >= SecondsToBrush)
+                        {
+                            block.ChangeExplorationStatus(1);
+                            timer = 0;
+                        }
                     }
                 }
             }
