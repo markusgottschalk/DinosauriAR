@@ -16,6 +16,7 @@ public class Tool : NetworkBehaviour
 
     //tools work only for one block
     private bool isUsed;
+    private GameObject lastWorkedBlock = null;
 
     [HideInInspector]
 #pragma warning disable 618
@@ -63,22 +64,34 @@ public class Tool : NetworkBehaviour
     /// <param name="other"></param>
     private void OnTriggerEnter(Collider other)
     {
+        if(lastWorkedBlock == null)
+        {
+            isUsed = false;
+        }
+
+        //Debug.Log("Is the Tool already in use? " + isUsed);
+
         if (!isUsed)
         {
             isUsed = true;
 
+            //Debug.Log("Has the client the authority over the tool? " + hasAuthority);
+
             if (hasAuthority)
             {
-                if (other.CompareTag("Block"))
+                //Debug.Log("What is the tag of the colliding object: " + other.tag);
+
+                if (other.CompareTag("BlockGraphics"))
                 {
                     Block block = other.gameObject.transform.parent.GetComponent<Block>();
                     //Debug.Log("Colliding with " + block.BlockMaterial);
-                    foreach(BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
+                    foreach (BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
                     {
                         //Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + blockMaterial);
                         if (block.BlockMaterial == blockMaterial)
                         {
                             block.ChangeDestroyStatus(1);
+                            lastWorkedBlock = block.gameObject;
                         }
                     }
                 }

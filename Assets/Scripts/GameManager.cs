@@ -75,13 +75,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void StartExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
+    public void StartExpedition(string expeditionName/*TODO besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
         ARCoreController.OnEnterHostingModeClick();
     }
 
-    public void JoinExpedition(string expeditionName/*besser wäre: Expedition expedition*/)
+    public void JoinExpedition(string expeditionName/*TODO besser wäre: Expedition expedition*/)
     {
         UICamera.SetActive(false);
         ARCoreController.OnEnterResolvingModeClick();

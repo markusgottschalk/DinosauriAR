@@ -51,6 +51,8 @@ public class LocalPlayerControllerClass : NetworkBehaviour
     //The prefabs to visualize on different images. Which visualized object for which image is used depends on position on imageList -> position 0: image in databse with position:0...
     public List<GameObject> VisualizedObjects;
 
+    private Dictionary<string, GameObject> blocksOnClientSynchronize;
+
     /// <summary>
     /// The Unity OnStartLocalPlayer() method. This works only for the local client.
     /// </summary>
@@ -64,6 +66,13 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning disable 618
         CmdSpawnPlayerObject();
 #pragma warning restore 618
+
+        blocksOnClientSynchronize = new Dictionary<string, GameObject>();
+        GameObject[] blocks = GameObject.FindGameObjectsWithTag("Block");
+        foreach(GameObject block in blocks)
+        {
+            blocksOnClientSynchronize.Add(block.gameObject.name, block);
+        }
     }
 
     /// <summary>
@@ -196,6 +205,210 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         foreach (Transform child in anchor.transform)
         {
             child.gameObject.SetActive(active);
+        }
+    }
+
+
+    /// <summary>
+    /// Command to change status of block. 
+    /// </summary>
+    /// <param name="netID">The network Id of the anchor to find the right child.</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status of the block which should be passed onto the clients.</param>
+#pragma warning disable 618
+    [Command]
+    public void CmdSetBlock(NetworkInstanceId netID, string name, int currentStatus)
+    {
+        GameObject anchor = NetworkServer.FindLocalObject(netID);
+#pragma warning restore 618
+        GameObject block = anchor.transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().CurrentStatus = currentStatus;
+        Debug.Log("SERVER: change " + name + " to " + currentStatus);
+        RpcChangeBlockStatus(anchor, name, currentStatus);
+    }
+
+    /// <summary>
+    /// The RPC to change the status of a block on every client.
+    /// </summary>
+    /// <param name="anchor">The anchor Object</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="currentStatus">The new status of the block.</param>
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeBlockStatus(GameObject anchor, string name, int currentStatus)
+    {
+        Debug.Log("ONCLIENT, change " + name);
+        Transform block = anchor.transform.FindDeepChild(name);
+        if (block != null)
+        {
+            Debug.Log(name + " changed to " + currentStatus);
+            block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
+        }
+    }
+
+    /// <summary>
+    /// Command to change status (percent analyzed) of block. 
+    /// </summary>
+    /// <param name="netID">The network Id of the anchor to find the right child.</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="newStatus">The new status (percent analyzed) of the block which should be passed onto the clients.</param>
+#pragma warning disable 618
+    [Command]
+    public void CmdSetBlockPercentAnalyzed(NetworkInstanceId netID, string name, int newStatus)
+    {
+        GameObject anchor = NetworkServer.FindLocalObject(netID);
+#pragma warning restore 618
+        GameObject block = anchor.transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().PercentAnalyzed = newStatus;
+        RpcChangeBlockPercentAnalyzed(anchor, name, newStatus);
+    }
+
+    /// <summary>
+    /// The RPC to change the status (percent analyzed) of a block on every client.
+    /// </summary>
+    /// <param name="anchor">The anchor Object</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="percentAnalyzed">The new status (percent analyzed) of the block.</param>
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeBlockPercentAnalyzed(GameObject anchor, string name, int percentAnalyzed)
+    {
+        Transform block = anchor.transform.FindDeepChild(name);
+        if (block != null)
+        {
+            block.gameObject.GetComponent<Block>().PercentAnalyzed = percentAnalyzed;
+        }
+    }
+
+    /// <summary>
+    /// Command to change status (exploration status) of block. 
+    /// </summary>
+    /// <param name="netID">The network Id of the anchor to find the right child.</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="newStatus">The new status (exploration status) of the block which should be passed onto the clients.</param>
+#pragma warning disable 618
+    [Command]
+    public void CmdSetBlockExplorationStatus(NetworkInstanceId netID, string name, int newStatus)
+    {
+        GameObject anchor = NetworkServer.FindLocalObject(netID);
+#pragma warning restore 618
+        GameObject block = anchor.transform.FindDeepChild(name).gameObject;
+        block.GetComponent<Block>().ExplorationStatus = newStatus;
+        RpcChangeBlockExplorationStatus(anchor, name, newStatus);
+    }
+
+    /// <summary>
+    /// The RPC to change the status (exploration status) of a block on every client.
+    /// </summary>
+    /// <param name="anchor">The anchor Object</param>
+    /// <param name="name">The name of the block.</param>
+    /// <param name="explorationStatus">The new status (exploration status) of the block.</param>
+#pragma warning disable 618
+    [ClientRpc]
+#pragma warning restore 618
+    public void RpcChangeBlockExplorationStatus(GameObject anchor, string name, int explorationStatus)
+    {
+        Transform block = anchor.transform.FindDeepChild(name);
+        if (block != null)
+        {
+            block.gameObject.GetComponent<Block>().ExplorationStatus = explorationStatus;
+        }
+    }
+
+#pragma warning disable 618
+    [Command]
+    public void CmdUpdateAllBlocks(NetworkInstanceId netID)
+    {
+        GameObject anchor = NetworkServer.FindLocalObject(netID);
+        GameObject[] blocks = GameObject.FindGameObjectsWithTag("Block");
+#pragma warning restore 618
+        //Debug.Log("SERVER: number of blocks: " + blocks.Length);
+
+        foreach (GameObject blockGO in blocks)
+        {
+            Block block = blockGO.GetComponent<Block>();
+            TargetUpdateAllBlocks(connectionToClient, anchor, blockGO.name, block.CurrentStatus, block.PercentAnalyzed, block.ExplorationStatus);
+            //Debug.Log("SERVER: Update " + blockGO.name + ": current status: " + block.CurrentStatus + ", percent analyzed: " + block.PercentAnalyzed + ", exploration status: " + block.ExplorationStatus);
+        }
+
+        TargetUpdateAllBlocksEnd(connectionToClient);
+    }
+
+#pragma warning disable 618
+    [TargetRpc]
+    public void TargetUpdateAllBlocks(NetworkConnection client, GameObject anchor, string blockName, int currentStatus, int percentAnalyzed, int explorationStatus)
+    {
+#pragma warning restore 618
+        //Debug.Log("CLIENT: Update Block! " + blockName);
+        Transform block = anchor.transform.FindDeepChild(blockName);
+        if (block != null)
+        {
+            blocksOnClientSynchronize.Remove(block.gameObject.name);
+            //Debug.Log("CLIENT: BEFORE UPDATE " + blockName + ": current status: " + currentStatus + ", percent analyzed: " + percentAnalyzed + ", exploration status: " + explorationStatus);
+            block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
+            block.gameObject.GetComponent<Block>().PercentAnalyzed = percentAnalyzed;
+            block.gameObject.GetComponent<Block>().ExplorationStatus = explorationStatus;
+            //Debug.Log("CLIENT: AFTER UPDATE " + blockName + ": current status: " + currentStatus + ", percent analyzed: " + percentAnalyzed + ", exploration status: " + explorationStatus);
+        }
+    }
+
+    /// <summary>
+    /// Function which gets called on the client when the synchronization of the blocks is finished.
+    /// </summary>
+    /// <param name="client">The client</param>
+#pragma warning disable 618
+    [TargetRpc]
+    public void TargetUpdateAllBlocksEnd(NetworkConnection client)
+#pragma warning restore 618
+    {
+        //check all still existing blocks on the client which don't exist on the server
+        foreach (KeyValuePair<string, GameObject> block in blocksOnClientSynchronize)
+        {
+            CmdCheckBlockForBones(block.Value.transform.parent.name, block.Value.name);
+        }
+
+        blocksOnClientSynchronize.Clear();
+    }
+
+    /// <summary>
+    /// Server checks the blocks for bones: 
+    /// When the parent gameObject does not exist, it should be destroyed on the client as well.
+    /// When the parent gameObject exists, only the block should be destroyed on the client.
+    /// </summary>
+    /// <param name="parentBlockName">The name of the parent gameObject</param>
+    /// <param name="childBlockName">The name of the block</param>
+#pragma warning disable 618
+    [Command]
+#pragma warning restore 618
+    public void CmdCheckBlockForBones(string parentBlockName, string childBlockName)
+    {
+        GameObject parentBlock = GameObject.Find(parentBlockName);
+        if(parentBlock == null)
+        {
+            TargetDestroySpecificBlock(connectionToClient, parentBlockName);
+        }
+        else
+        {
+            TargetDestroySpecificBlock(connectionToClient, childBlockName);
+        }
+    }
+
+    /// <summary>
+    /// Specific client destroys a specific gameObject (either a parent of a block or the block itself). 
+    /// </summary>
+    /// <param name="client">The client</param>
+    /// <param name="blockNameToDestroy">The gameObject to destroy</param>
+#pragma warning disable 618
+    [TargetRpc]
+    public void TargetDestroySpecificBlock(NetworkConnection client, string blockNameToDestroy)
+#pragma warning restore 618
+    {
+        GameObject blockToDestroy = GameObject.Find(blockNameToDestroy);
+        if(blockToDestroy != null)
+        {
+            Destroy(blockToDestroy);
         }
     }
 }

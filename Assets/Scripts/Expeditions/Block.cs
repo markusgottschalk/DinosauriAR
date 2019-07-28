@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class Block : MonoBehaviour
 {
-    private CloudAnchorController rootAnchorController;
+    private CloudAnchorController cloudAnchor;
 
     private Material[] currentMaterials;
 
@@ -14,9 +15,11 @@ public class Block : MonoBehaviour
     private float explorationRate;
 
     [SerializeField]
-    private int explorationStatusMax;
+    private int explorationStatusMax = 0;
     [SerializeField]
-    private float lerpTime;
+    private float lerpTimeForScale = 0;
+
+    private Vector3 startScale;
 
     /// <summary>
     /// The exploration status when the brush is used. Will shrink to the ground and gets destroyed when 0 is reached.
@@ -26,11 +29,12 @@ public class Block : MonoBehaviour
     {
         get { return explorationStatus; }
         set
-        { 
+        {
             explorationStatus = Mathf.Clamp(value, 0, explorationStatusMax);
-            Vector3 newScale = new Vector3(gameObject.transform.localScale.x, gameObject.transform.localScale.y - explorationRate, gameObject.transform.localScale.z);
+
+            Vector3 newScale = startScale - (this.gameObject.transform.up * (explorationRate * explorationStatus));
             StartCoroutine(lerpToNewScale(gameObject.transform.localScale, newScale));
-            //gameObject.transform.localScale = new Vector3(gameObject.transform.localScale.x, gameObject.transform.localScale.y - explorationRate, gameObject.transform.localScale.z);
+
             if (explorationStatus == explorationStatusMax)
             {
                 destroy(true);
@@ -48,6 +52,9 @@ public class Block : MonoBehaviour
         private set { analyzed = value; }
     }
 
+    [SerializeField]
+    private int analyzeMax = 0;
+
     /// <summary>
     /// The analyze status of the block. If 100% is reached, show whether bones are available or not. 
     /// </summary>
@@ -57,8 +64,8 @@ public class Block : MonoBehaviour
         get { return percentAnalyzed; }
         set
         {
-            percentAnalyzed = Mathf.Clamp(value, 0, 100);
-            if (percentAnalyzed == 100)
+            percentAnalyzed = Mathf.Clamp(value, 0, analyzeMax);
+            if (percentAnalyzed == analyzeMax)
             {
                 Analyzed = true;
                 if (BonesAvailable)
@@ -142,13 +149,14 @@ public class Block : MonoBehaviour
 
     void Start()
     {
+        cloudAnchor = this.gameObject.transform.root.GetComponent<CloudAnchorController>();
+
         currentMaterials = transform.GetChild(0).GetComponent<MeshRenderer>().materials;
         changeMaterial(crackMaterials[CurrentStatus], boneMaterials[2]);
 
-        rootAnchorController = transform.root.GetComponent<CloudAnchorController>();
-        //Debug.Log(name + " has BlockMaterial: " + BlockMaterial);
+        explorationRate = Vector3.Dot(gameObject.transform.up, gameObject.transform.localScale) / (float)explorationStatusMax;
 
-        explorationRate = gameObject.transform.localScale.y / (float)explorationStatusMax;
+        startScale = this.gameObject.transform.localScale;
     }
 
     /// <summary>
@@ -170,18 +178,18 @@ public class Block : MonoBehaviour
 
     public void ChangeDestroyStatus(int statusChange)
     {
-        //Debug.Log("BLOCK: change current status from "+ CurrentStatus+" to "+ (CurrentStatus+statusChange));
-        rootAnchorController.CmdSetBlock(this.gameObject.name, CurrentStatus + statusChange);   //send already changed status to server
+        //Debug.Log("BLOCK: change current status from " + CurrentStatus + " to " + (CurrentStatus + statusChange));
+        cloudAnchor.CmdSetBlock(this.gameObject.name, CurrentStatus + statusChange);   //send already changed status to server
     }
 
     public void ChangePercentAnalyzed(int statusChange)
     {
-        rootAnchorController.CmdSetBlockPercentAnalyzed(this.gameObject.name, PercentAnalyzed + statusChange);
+        cloudAnchor.CmdSetBlockPercentAnalyzed(this.gameObject.name, PercentAnalyzed + statusChange);
     }
 
     public void ChangeExplorationStatus(int statusChange)
     {
-        rootAnchorController.CmdSetBlockExplorationStatus(this.gameObject.name, ExplorationStatus + statusChange);
+        cloudAnchor.CmdSetBlockExplorationStatus(this.gameObject.name, ExplorationStatus + statusChange);
     }
 
     private void changeMaterial(Material firstMaterial, Material secondMaterial)
@@ -202,15 +210,20 @@ public class Block : MonoBehaviour
     private IEnumerator lerpToNewScale(Vector3 oldScale, Vector3 newScale)
     {
         float elapsedTime = 0;
-        while(elapsedTime < lerpTime)
+        while(elapsedTime < lerpTimeForScale)
         {
-            gameObject.transform.localScale = Vector3.Lerp(oldScale, newScale, (elapsedTime / lerpTime));
+            gameObject.transform.localScale = Vector3.Lerp(oldScale, newScale, (elapsedTime / lerpTimeForScale));
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
         gameObject.transform.localScale = newScale;
         yield return null;
+    }
+
+    public int getAnalyzeMax()
+    {
+        return analyzeMax;
     }
 
 }

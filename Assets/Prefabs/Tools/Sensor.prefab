@@ -668,6 +668,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToolType: 2
+  gameManager: {fileID: 0}
   imageDatabaseindex: 0
   sensorAnalyzerLine: {fileID: 200038099345926590}
   analyzerStatus: {fileID: 1540311800570168083}
@@ -675,6 +676,7 @@ MonoBehaviour:
   sensorStandard: {fileID: 21300000, guid: 41323a71291bef94faad9feba3e5dbb3, type: 3}
   sensorBones: {fileID: 21300000, guid: 0eccf08de365f4149845499660c1c007, type: 3}
   sensorNoBones: {fileID: 21300000, guid: e90ecb373445a5e4bace829fb185993e, type: 3}
+  SecondsToAnalyze: 0.5
 --- !u!1 &8577894681295405627
 GameObject:
   m_ObjectHideFlags: 0

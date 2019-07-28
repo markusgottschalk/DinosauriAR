@@ -27,7 +27,7 @@ public class Brush : Tool
     {
         if (hasAuthority)
         {
-            if (other.CompareTag("Block"))
+            if (other.CompareTag("BlockGraphics"))
             {
                 Block block = other.gameObject.transform.parent.GetComponent<Block>();
                 Debug.Log("Colliding with " + block.BlockMaterial);

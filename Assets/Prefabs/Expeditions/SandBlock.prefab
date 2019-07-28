@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   explorationStatusMax: 10
-  lerpTime: 3
+  lerpTimeForScale: 3
+  analyzeMax: 10
   bonesAvailable: 0
   blockMaterial: 0
   crackMaterials:
@@ -72,7 +73,7 @@ GameObject:
   - component: {fileID: 3631899718799957426}
   m_Layer: 0
   m_Name: Graphics
-  m_TagString: Block
+  m_TagString: BlockGraphics
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

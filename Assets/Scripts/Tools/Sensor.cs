@@ -45,11 +45,17 @@ public class Sensor : Tool
     [SerializeField]
     private Sprite sensorNoBones = null;
 
+    public float SecondsToAnalyze;
+    private float timer = 0;
+    private bool fillAmountLerpRunning = false;
+
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
 
         analyzer = new Ray(sensorAnalyzerLine.transform.position, sensorAnalyzerLine.transform.forward);
+        //timer = SecondsToAnalyze;       //when analyzing a block it should immediately start without waiting
+        timer = 0;
     }
 
     private void Update()
@@ -68,11 +74,21 @@ public class Sensor : Tool
                     sensorAnalyzerLine.SetPosition(1, new Vector3(0, 0, hit.distance*9));
                     //Debug.Log("SensorAnalyzerLine length: " + hit.distance);
 
-                    if (hit.transform.CompareTag("Block"))
+                    if (hit.transform.CompareTag("BlockGraphics"))
                     {
                         Block block = hit.transform.parent.GetComponent<Block>();
-                        block.ChangePercentAnalyzed(1);     //+1% analyzed with every tick
-                        analyzerStatus.fillAmount = (float)block.PercentAnalyzed / (float)100;
+
+                        timer += Time.deltaTime;
+                        if (!fillAmountLerpRunning)
+                        {
+                            StartCoroutine(lerpToAnalyzeStatus((float)block.PercentAnalyzed / (float)block.getAnalyzeMax(), ((float)block.PercentAnalyzed + 1) / (float)block.getAnalyzeMax()));
+                        }
+
+                        if (timer >= SecondsToAnalyze)
+                        {
+                            block.ChangePercentAnalyzed(1);
+                            timer = 0;
+                        }
 
                         //if block is completely analyzed
                         if (block.Analyzed)
@@ -124,5 +140,19 @@ public class Sensor : Tool
                 }
             }
         }
+    }
+
+    private IEnumerator lerpToAnalyzeStatus(float oldStatus, float newStatus)
+    {
+        fillAmountLerpRunning = true;
+        float elapsedTime = 0;
+        while (elapsedTime < SecondsToAnalyze)
+        {
+            analyzerStatus.fillAmount = Mathf.Lerp(oldStatus, newStatus, (elapsedTime / SecondsToAnalyze));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        fillAmountLerpRunning = false;
+        yield return null;
     }
 }
