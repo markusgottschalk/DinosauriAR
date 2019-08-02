@@ -20,9 +20,16 @@ public class ExpeditionsLobbyScreen : UIScreen
 
     private List<GameObject> joinButtons;
 
+    /// <summary>
+    /// The refresh Icons which will be shown when the refresh button is clicked.
+    /// </summary>
+    [SerializeField]
+    private List<Sprite> refreshIconsToRotate = null;
+    [SerializeField]
+    private GameObject refreshGameObject = null;
+
     void Start()
     {
-        //expeditionsLobbyScreen = gameObject.GetComponent<Canvas>();
         titleText = title.GetComponent<TextMeshProUGUI>().text;
         joinButtons = new List<GameObject>();
     }
@@ -32,6 +39,10 @@ public class ExpeditionsLobbyScreen : UIScreen
         expeditionsLobbyScreen.enabled = true;
     }
 
+    /// <summary>
+    /// Show screen for specific expedition.
+    /// </summary>
+    /// <param name="expeditionName">The name of the expedition</param>
     public void ShowScreen(string expeditionName)
     {
         this.expeditionName = expeditionName;
@@ -44,47 +55,49 @@ public class ExpeditionsLobbyScreen : UIScreen
         expeditionsLobbyScreen.enabled = false;
     }
 
-    public void OnJoinExpeditionClicked()
-    {
-        //TODO -> evtl gleich beim Klicken auf Expedition joinen...
-        //UIController.ExpeditionsLobby_ExpeditionLobby(expeditionName);
-    }
-
+    /// <summary>
+    /// When refresh button has been clicked, "rotate" the refresh button to give feedback that the click was successful, even when no new expeditions are shown.
+    /// </summary>
     public void OnExpeditionsLobbyRefreshClicked()
     {
+        StartCoroutine(rotateRefreshIcon(2));
         UIController.RefreshExpeditionRoomList(expeditionName);
     }
 
-    public void RefreshLobby(Dictionary<string, string> hostANDexpeditionNames, List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
+    /// <summary>
+    /// Refresh the Lobby with available matches.
+    /// </summary>
+    /// <param name="matches">The available matches</param>
+#pragma warning disable 618
+    public void RefreshLobby(List<UnityEngine.Networking.Match.MatchInfoSnapshot> matches)
+#pragma warning restore 618
     {
-        foreach(GameObject go in joinButtons)
+        foreach (GameObject go in joinButtons)
         {
             Destroy(go);
         }
 
-        if(hostANDexpeditionNames.Count == 0) //no matches
+        if(matches.Count == 0) //no matches
         {
             return;
         }
 
-        //int i = 0;
-        //foreach(KeyValuePair<string, string> match in hostANDexpeditionNames)
-        //{
-        //    GameObject expedition = Instantiate(ExpeditionRoomPrefab, expeditionList.transform);
-        //    expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.Key; //write leader name
-        //    joinButtons.Add(expedition);
-        //    expedition.GetComponent<Button>().onClick.AddListener(() => UIController.JoinRoom(matches[i]));
-        //    i++;
-        //}
-        foreach(UnityEngine.Networking.Match.MatchInfoSnapshot match in matches)
+        //add join button for each match
+#pragma warning disable 618
+        foreach (UnityEngine.Networking.Match.MatchInfoSnapshot match in matches)
+#pragma warning restore 618
         {
             GameObject expedition = Instantiate(ExpeditionRoomPrefab, expeditionList.transform);
-            expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.hostNodeId.ToString(); //TODO: write leader name
+            expedition.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = match.name.Split('-')[1];
             joinButtons.Add(expedition);
             expedition.GetComponent<Button>().onClick.AddListener(() => UIController.JoinRoom(match));
         }
     }
 
+    /// <summary>
+    /// Change the title of the screen.
+    /// </summary>
+    /// <param name="newTitle">The new title</param>
     private void changeTitle(string newTitle)
     {
         switch (newTitle)
@@ -95,6 +108,22 @@ public class ExpeditionsLobbyScreen : UIScreen
             default:
                 titleText = "no expedition found";
                 break;
+        }
+    }
+
+    private IEnumerator rotateRefreshIcon(float seconds)
+    {
+        int i = 0;
+        while (seconds > 0)
+        {
+            refreshGameObject.GetComponent<Image>().sprite = refreshIconsToRotate[i];
+            i++;
+            if (i >= refreshIconsToRotate.Count)
+            {
+                i = 0;
+            }
+            seconds -= 0.5f;
+            yield return new WaitForSeconds(0.5f);
         }
     }
 }

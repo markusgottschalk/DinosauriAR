@@ -32,7 +32,7 @@ public class CloudAnchorController : NetworkBehaviour
     /// <summary>
     /// The Cloud Anchors example controller.
     /// </summary>
-    private ARCoreController ARCoreController;
+    private ARCoreController ARCoreController = null;
 
     private LocalPlayerControllerClass localPlayer;
 
@@ -41,9 +41,11 @@ public class CloudAnchorController : NetworkBehaviour
     /// </summary>
     public void Start()
     {
-        ARCoreController =
-            GameObject.Find("ARCoreController")
-                .GetComponent<ARCoreController>();
+        if(ARCoreController == null)
+        {
+            ARCoreController = GameObject.Find("ARCoreController").GetComponent<ARCoreController>();
+        }
+        
         localPlayer = GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>();
     }
 
@@ -56,6 +58,12 @@ public class CloudAnchorController : NetworkBehaviour
         {
             m_ShouldResolve = true;
         }
+
+        if (ARCoreController == null)
+        {
+            ARCoreController = GameObject.Find("ARCoreController").GetComponent<ARCoreController>();
+        }
+        ARCoreController.OnAnchorInstantiated(false);
     }
 
     /// <summary>
@@ -131,8 +139,6 @@ public class CloudAnchorController : NetworkBehaviour
     /// <param name="cloudAnchorId">Cloud anchor id to be resolved.</param>
     private void _ResolveAnchorFromId(string cloudAnchorId)
     {
-        ARCoreController.OnAnchorInstantiated(false);
-
         // If device is not tracking, let's wait to try to resolve the anchor.
         if (Session.Status != SessionStatus.Tracking)
         {
@@ -198,23 +204,60 @@ public class CloudAnchorController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Command to the server to update all blocks. 
+    /// </summary>
     private void updateAllChildren()
     {
         localPlayer.CmdUpdateAllBlocks(netId);
     }
 
+    /// <summary>
+    /// Command to the server to change the crack status of a block.
+    /// </summary>
+    /// <param name="name">The name of the block for identification</param>
+    /// <param name="newStatus">The new status of cracks</param>
     public void CmdSetBlock(string name, int newStatus)
     {
         localPlayer.CmdSetBlock(netId, name, newStatus);
     }
 
+    /// <summary>
+    /// Command to the server to change the percent analyzed status of a block.
+    /// </summary>
+    /// <param name="name">The name of the block for identification</param>
+    /// <param name="newStatus">The new percent analyzed status</param>
     public void CmdSetBlockPercentAnalyzed(string name, int newStatus)
     {
         localPlayer.CmdSetBlockPercentAnalyzed(netId, name, newStatus);
     }
 
+    /// <summary>
+    /// Command to the server to change the exploration status (localScale.up) status of a block.
+    /// </summary>
+    /// <param name="name">The name of the block for identification</param>
+    /// <param name="newStatus">The new exploration status</param>
     public void CmdSetBlockExplorationStatus(string name, int newStatus)
     {
         localPlayer.CmdSetBlockExplorationStatus(netId, name, newStatus);
+    }
+
+    /// <summary>
+    /// Delegates a message to be shown to the ARController.
+    /// </summary>
+    /// <param name="message">The message text</param>
+    /// <param name="seconds">The duration the message is shown</param>
+    public void ShowMessage(string message, int seconds)
+    {
+        ARCoreController.ShowMessage(message, seconds);
+    }
+
+    /// <summary>
+    /// End the expedition. 
+    /// </summary>
+    /// <param name="success">States whether the expedition was successful</param>
+    public void EndExpedition(bool success)
+    {
+        ARCoreController.EndExpedition(success);
     }
 }

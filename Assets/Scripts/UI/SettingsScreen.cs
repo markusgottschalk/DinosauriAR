@@ -19,9 +19,11 @@ public class SettingsScreen : UIScreen
 
     void Start()
     {
-        //settingsScreen = gameObject.GetComponent<Canvas>();
         placeholderText = inputField.GetComponent<TMP_InputField>().placeholder.GetComponent<TextMeshProUGUI>();
         inputFieldText = inputField.GetComponent<TMP_InputField>();
+
+        playerName = UIController.GetPlayerName();
+        placeholderText.text = playerName;
     }
 
     public override void ShowScreen()
@@ -34,6 +36,9 @@ public class SettingsScreen : UIScreen
         settingsScreen.enabled = false;
     }
 
+    /// <summary>
+    /// Save the new player name and show it as new placeholder.
+    /// </summary>
     public void OnSaveClicked()
     {
         playerName = inputFieldText.text;

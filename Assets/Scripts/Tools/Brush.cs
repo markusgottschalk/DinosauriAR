@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Brush : Tool
 {
+    /// <summary>
+    /// The duration for which the brush has to be held inside the block to activate effect.
+    /// </summary>
     public float SecondsToBrush;
     private float timer = 0;
 
@@ -30,7 +33,7 @@ public class Brush : Tool
             if (other.CompareTag("BlockGraphics"))
             {
                 Block block = other.gameObject.transform.parent.GetComponent<Block>();
-                Debug.Log("Colliding with " + block.BlockMaterial);
+                //Debug.Log("Colliding with " + block.BlockMaterial);
                 foreach (BlockMaterial blockMaterial in gameManager.toolsForBlocks[ToolType])
                 {
                     //Debug.Log("TOOL: BlockMaterial: " + block.BlockMaterial + ", own tooltype is for: " + blockMaterial);

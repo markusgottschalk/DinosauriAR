@@ -38,7 +38,7 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
     public Transform ARCoreDeviceTransform;
 
     /// <summary>
-    /// A prefab for tracking and visualizing detected planes.
+    /// A prefab for tracking and visualizing detected planes. <see cref="DetectedPlaneVisualizer"/> in it is responsible for showing the plants. 
     /// </summary>
     public GameObject DetectedPlanePrefab;
 
@@ -112,7 +112,7 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
     public void SetWorldOrigin(Transform anchorTransform)
     {
         // Each client will store the anchorTransform, and will have to move the ARCoreDevice
-        // (and therefore also it's FirstPersonCamera child) and update other trakced poses
+        // (and therefore also it's FirstPersonCamera child) and update other tracked poses
         // (planes, anchors, etc.) so that they appear in the same position in the real world.
         if (m_IsOriginPlaced)
         {
@@ -136,6 +136,7 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
             }
         }
 
+        //set the position of the augmented tools to the offset
         Pose augmentedImagesPose = WorldToAnchorPose(new Pose(AugmentedImages.position, AugmentedImages.rotation));
         AugmentedImages.SetPositionAndRotation(augmentedImagesPose.position, augmentedImagesPose.rotation);
     }
@@ -188,6 +189,16 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
             anchorTWorld.GetColumn(2), anchorTWorld.GetColumn(1));
 
         return new Pose(position, rotation);
+    }
+
+    public void ResetPlanes()
+    {
+        Debug.Log("Destroy all planes");
+        foreach (GameObject planeObject in VisualizedPlanes)
+        {
+            Destroy(planeObject);
+        }
+        VisualizedPlanes.Clear();
     }
 }
 

@@ -4,7 +4,11 @@ using UnityEngine;
 
 public static class HelperClass
 {
-    //Breadth-first search
+    /// <summary>
+    /// Find a child by name. Recursive breadth-first search
+    /// </summary>
+    /// <param name="aParent">The parent</param>
+    /// <param name="aName">The name to search for</param>
     public static Transform FindDeepChild(this Transform aParent, string aName)
     {
         Queue<Transform> queue = new Queue<Transform>();

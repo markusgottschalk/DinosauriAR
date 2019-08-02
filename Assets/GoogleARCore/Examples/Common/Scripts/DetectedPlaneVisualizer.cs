@@ -16,6 +16,7 @@
 // limitations under the License.
 //
 // </copyright>
+// THIS SCRIPT WAS MODIFIED.
 //-----------------------------------------------------------------------
 
 namespace GoogleARCore.Examples.Common
@@ -29,6 +30,16 @@ namespace GoogleARCore.Examples.Common
     /// </summary>
     public class DetectedPlaneVisualizer : MonoBehaviour
     {
+        public int maxPlants = 100;
+        public List<GameObject> plantPrefabs;
+        private List<GameObject> plantPool;
+        private int activePlant = 0;
+        [SerializeField]
+        private float distanceToPlants = 0;
+        public LayerMask LayerMask;
+        private Collider[] objectsInDistance;
+        private GameObject plant;
+
         private static int s_PlaneCount = 0;
 
         private readonly Color[] k_PlaneColors = new Color[]
@@ -72,6 +83,15 @@ namespace GoogleARCore.Examples.Common
         {
             m_Mesh = GetComponent<MeshFilter>().mesh;
             m_MeshRenderer = GetComponent<UnityEngine.MeshRenderer>();
+
+            //für jede detected plane...
+            plantPool = new List<GameObject>();
+            for (int i = 0; i < maxPlants; i++)
+            {
+                GameObject plant = Instantiate(plantPrefabs[Random.Range(0, plantPrefabs.Count - 1)], this.transform);
+                plant.SetActive(false);
+                plantPool.Add(plant);
+            }
         }
 
         /// <summary>
@@ -90,8 +110,8 @@ namespace GoogleARCore.Examples.Common
             }
             else if (m_DetectedPlane.TrackingState != TrackingState.Tracking)
             {
-                 m_MeshRenderer.enabled = false;
-                 return;
+                m_MeshRenderer.enabled = false;
+                return;
             }
 
             m_MeshRenderer.enabled = true;
@@ -160,16 +180,27 @@ namespace GoogleARCore.Examples.Common
             // Feather scale over the distance between plane center and vertices.
             const float featherScale = 0.2f;
 
+            //add a new plant in the center of the detected plane if there is no other plant already in the surrounding area
+            addNewPlants(m_PlaneCenter);
+
+
             // Add vertex 4 to 7.
             for (int i = 0; i < planePolygonCount; ++i)
             {
                 Vector3 v = m_MeshVertices[i];
 
+                //Show plants when there are no other plants in the surrounding area
+                addNewPlants(v);
+
+
                 // Vector from plane center to current point
                 Vector3 d = v - m_PlaneCenter;
 
                 float scale = 1.0f - Mathf.Min(featherLength / d.magnitude, featherScale);
-                m_MeshVertices.Add((scale * d) + m_PlaneCenter);
+
+                Vector3 meshVertex = (scale * d) + m_PlaneCenter;
+
+                m_MeshVertices.Add(meshVertex);
 
                 m_MeshColors.Add(Color.white);
             }
@@ -226,6 +257,23 @@ namespace GoogleARCore.Examples.Common
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Show plants on a position when there are no other plants in the surrounding area (radius defined by distanceToPlants)
+        /// </summary>
+        /// <param name="position">The position to show the plant</param>
+        private void addNewPlants(Vector3 position)
+        {
+            objectsInDistance = Physics.OverlapSphere(position, distanceToPlants, LayerMask);
+            if (objectsInDistance.Length == 0)
+            {
+                plant = plantPool[activePlant % maxPlants];
+                plant.transform.position = position;
+                plant.SetActive(true);
+                StartCoroutine(plant.GetComponent<Plant>().GrowPlant(1));
+                activePlant++;
+            }
         }
     }
 }

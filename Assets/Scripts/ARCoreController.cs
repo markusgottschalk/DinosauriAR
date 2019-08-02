@@ -22,6 +22,7 @@
 
 
 using GoogleARCore;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -42,7 +43,9 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public NetworkManagerController NetworkManagerController;
 
-    //TODO: eher über NetworkManagerController laufen lassen?!
+    /// <summary>
+    /// The Main network manager.
+    /// </summary>
     public MainNetworkManager MainNetworkManager;
 
     public UIController UIController;
@@ -98,7 +101,37 @@ public class ARCoreController : MonoBehaviour
     private ApplicationMode m_CurrentMode = ApplicationMode.Ready;
 
     public GameObject ARCoreDevice;
+
+    /// <summary>
+    /// The currently active ARCore Session.
+    /// </summary>
     private ARCoreSession arCoreSession;
+
+    /// <summary>
+    /// The prefab for the ARCore Session Config.
+    /// </summary>
+    [SerializeField]
+    private ARCoreSessionConfig arCoreSessionConfigPrefab = null;
+
+    /// <summary>
+    /// The prefab for the preview (the ground) of the expedition.
+    /// </summary>
+    public GameObject GroundPrefab;
+
+    /// <summary>
+    /// The preview of the expedition.
+    /// </summary>
+    private GameObject groundForExpedition;
+
+    /// <summary>
+    /// A Touch of the user.
+    /// </summary>
+    private Touch touch;
+
+    /// <summary>
+    /// Checks if the touch was the first or not (for showing the preview of the expedition).
+    /// </summary>
+    private bool firstTouch = false;
 
     /// <summary>
     /// A prefab for visualizing an AugmentedImage.
@@ -120,14 +153,6 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public GameObject AugmentedImages;
 
-    /// <summary>
-    /// The Network Manager.
-    /// </summary>
-#pragma warning disable 618
-    //private NetworkManager m_NetworkManager;
-#pragma warning restore 618
-
-    //private bool m_MatchStarted = false;
 
     /// <summary>
     /// Enumerates modes the example application can be in.
@@ -149,10 +174,6 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public void Start()
     {
-#pragma warning disable 618
-        //m_NetworkManager = UIController.GetComponent<NetworkManager>();
-#pragma warning restore 618
-
         MainNetworkManager.OnClientConnected += _OnConnectedToServer;
         MainNetworkManager.OnClientDisconnected += _OnDisconnectedFromServer;
 
@@ -162,6 +183,8 @@ public class ARCoreController : MonoBehaviour
         ARCoreRoot.SetActive(false);
         _ResetStatus();
         arCoreSession = ARCoreDevice.GetComponent<ARCoreSession>();
+        groundForExpedition = Instantiate(GroundPrefab);
+        groundForExpedition.SetActive(false);
     }
 
     /// <summary>
@@ -193,7 +216,7 @@ public class ARCoreController : MonoBehaviour
             //if no visualizer was found, add one
             if(visualizer == null && image.TrackingState == TrackingState.Tracking)
             {
-                Debug.Log("Add visualizer");
+                //Debug.Log("Add visualizer");
                 visualizer = (ARImageVisualizer)Instantiate(ARImageVisualizer, image.CenterPose.position, image.CenterPose.rotation, AugmentedImages.transform);
                 visualizer.Image = image;
                 visualizers.Add(image.DatabaseIndex, visualizer);
@@ -221,14 +244,47 @@ public class ARCoreController : MonoBehaviour
             return;
         }
 
-        // If the player has not touched the screen then the update is complete.
-        Touch touch;
-        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
+        //if the anchor is already placed then update for all is complete
+        if (m_IsOriginPlaced)
         {
             return;
         }
 
         TrackableHit arcoreHitResult = new TrackableHit();
+        m_LastHitPose = null;
+
+        //if the player has already touched the screen once, show  the expedition dimensions and where it could be placed (preview)
+        if (firstTouch && !m_IsOriginPlaced && m_CurrentMode == ApplicationMode.Hosting)
+        {
+            // Raycast against the location the player touched to search for planes.
+            if (ARCoreWorldOriginHelperClass.Raycast(touch.position.x, touch.position.y,
+                    TrackableHitFlags.PlaneWithinPolygon, out arcoreHitResult))
+            {
+                m_LastHitPose = arcoreHitResult.Pose;
+            }
+        }
+
+        //retransform the preview to where the smartphone camera points
+        if (m_LastHitPose != null)
+        {
+            groundForExpedition.transform.position = arcoreHitResult.Pose.position;
+            groundForExpedition.transform.rotation = arcoreHitResult.Pose.rotation;
+            groundForExpedition.SetActive(true);
+        }
+
+        //if there was no touch, the update is complete
+        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
+        {
+            return;
+        }
+
+        if (!firstTouch)
+        {
+            firstTouch = true;
+            ShowMessage("Mit einem weiteren Tippen auf dem Bildschirm erstellst du die Expedition dort, wo das grüne Rechteck angezeigt wird.", 10);
+            return;
+        }
+
         m_LastHitPose = null;
 
         // Raycast against the location the player touched to search for planes.
@@ -242,13 +298,8 @@ public class ARCoreController : MonoBehaviour
         // If there was an anchor placed, then instantiate the corresponding object.
         if (m_LastHitPose != null)
         {
-            // The first touch on the Hosting mode will instantiate the origin anchor. Any
-            // subsequent touch will instantiate a star, both in Hosting and Resolving modes.
-            if (_CanPlaceStars())
-            {
-                _InstantiateStar();
-            }
-            else if (!m_IsOriginPlaced && m_CurrentMode == ApplicationMode.Hosting)
+            // The first touch on the Hosting mode will instantiate the origin anchor.
+            if (!m_IsOriginPlaced && m_CurrentMode == ApplicationMode.Hosting)
             {
                 m_WorldOriginAnchor =
                     arcoreHitResult.Trackable.CreateAnchor(arcoreHitResult.Pose);
@@ -256,6 +307,7 @@ public class ARCoreController : MonoBehaviour
                 SetWorldOrigin(m_WorldOriginAnchor.transform);
                 _InstantiateAnchor();
                 OnAnchorInstantiated(true);
+                groundForExpedition.SetActive(false);
             }
         }
     }
@@ -339,16 +391,6 @@ public class ARCoreController : MonoBehaviour
     {
         m_AnchorFinishedHosting = success;
         UIController.OnAnchorHosted(success, response);
-
-        //if expedition is set and hosted, disable PlaneFinding Mode
-        //if (success)
-        //{
-            //arCoreSession.SessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Disabled;
-            //    foreach(GameObject gameObject in ARCoreWorldOriginHelper.VisualizedPlanes)
-            //    {
-            //        gameObject.SetActive(false);
-            //    }
-        //}
     }
 
     /// <summary>
@@ -369,11 +411,13 @@ public class ARCoreController : MonoBehaviour
     {
         if (m_CurrentMode == ApplicationMode.Hosting)
         {
-            UIController.ShowMessage("Finde eine Fläche und erstelle mit einem Tap auf den Bildschirm einen Anker.");
+            UIController.ShowMessage("Finde eine geeignete Fläche und tippe auf den Bildschirm um zu sehen, wo die Expedition erstellt werden würde.", 10);
+            UIController.ShowHandAnimation(5f);
         }
         else if (m_CurrentMode == ApplicationMode.Resolving)
         {
-            UIController.ShowMessage("Warte, dass der Anker gehostet wird...");
+            UIController.ShowMessage("Warte darauf, dass die Expedition von der Expeditionsleitung erstellt und verbreitet wird. Versuche mit der Kamera die gleiche Umgebung wie die Expeditionsleitung zu finden.", 10);
+            UIController.ShowHandAnimation(5f);
         }
         else
         {
@@ -403,33 +447,22 @@ public class ARCoreController : MonoBehaviour
     }
 
     /// <summary>
-    /// Instantiates a star object that will be synchronized over the network to other clients.
+    /// Forward a displayable message to the UIController.
     /// </summary>
-    private void _InstantiateStar()
+    /// <param name="message">The message</param>
+    /// <param name="seconds">The duration it will be shown</param>
+    public void ShowMessage(string message, int seconds)
     {
-        // Star must be spawned in the server so a networking Command is used.
-        GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>()
-            .CmdSpawnStar(m_LastHitPose.Value.position, m_LastHitPose.Value.rotation);
+        UIController.ShowMessage(message, seconds);
     }
 
-
     /// <summary>
-    /// Indicates whether a star can be placed.
+    /// End the expedition with success or no success.
     /// </summary>
-    /// <returns><c>true</c>, if stars can be placed, <c>false</c> otherwise.</returns>
-    private bool _CanPlaceStars()
+    /// <param name="success">If the expedition was successfull or not</param>
+    public void EndExpedition(bool success)
     {
-        if (m_CurrentMode == ApplicationMode.Resolving)
-        {
-            return m_IsOriginPlaced;
-        }
-
-        if (m_CurrentMode == ApplicationMode.Hosting)
-        {
-            return m_IsOriginPlaced && m_AnchorFinishedHosting;
-        }
-
-        return false;
+        UIController.EndExpedition(success);
     }
 
     /// <summary>
@@ -467,6 +500,26 @@ public class ARCoreController : MonoBehaviour
             return;
         }
 
+        //different messages for different problems
+        if (Session.Status == SessionStatus.LostTracking && Session.LostTrackingReason != LostTrackingReason.None)
+        {
+            switch (Session.LostTrackingReason)
+            {
+                case LostTrackingReason.InsufficientLight:
+                    UIController.ShowMessage("Es ist zu dunkel. Bewege dein Smartphone in eine hellere Umgebung.", 7);
+                    break;
+                case LostTrackingReason.InsufficientFeatures:
+                    UIController.ShowMessage("Es können nicht genügend Merkmale erkannt werden. Richte deine Kamera auf eine Fläche mit mehr unterschiedlicher Farbe oder anderer Textur.", 7);
+                    break;
+                case LostTrackingReason.ExcessiveMotion:
+                    UIController.ShowMessage("Du bewegst dein Smartphone zu schnell. Versuche es ruhiger zu halten.", 7);
+                    break;
+                default:
+                    UIController.ShowMessage("Es kann leider nichts erkannt werden.", 7);
+                    break;
+            }
+        }
+
         // Quit if ARCore was unable to connect and give Unity some time for the toast to
         // appear.
         if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
@@ -475,7 +528,7 @@ public class ARCoreController : MonoBehaviour
         }
         else if (Session.Status.IsError())
         {
-            _QuitWithReason("ARCore hat ein Verbindungsproblem. Bitte starte die App erneut.");
+            _QuitWithReason("ARCore hat ein Verbindungsproblem erkannt. Bitte starte die App erneut.");
         }
     }
 
@@ -488,7 +541,7 @@ public class ARCoreController : MonoBehaviour
         {
             return;
         }
-        UIController.ShowMessage(reason);
+        UIController.ShowMessage(reason, 5);
         m_IsQuitting = true;
         Invoke("_DoQuit", 5.0f);
     }
@@ -498,23 +551,29 @@ public class ARCoreController : MonoBehaviour
         GameManager.LeaveApp();
     }
 
+    /// <summary>
+    /// Quit only the ARMode. 
+    /// </summary>
     public void QuitARMode()
     {
-        _ResetStatus();
-        //TODO: does it work??
-        ResetARSession();
         ARCoreRoot.SetActive(false);
+        _ResetStatus();
+        StartCoroutine(ResetARSession());
     }
 
-    public void ResetARSession()
+    public IEnumerator ResetARSession()
     {
-        ARCoreSessionConfig arCoreSessionConfig = arCoreSession.SessionConfig;
-        arCoreSessionConfig.PlaneFindingMode = DetectedPlaneFindingMode.Horizontal;
-        Destroy(arCoreSession);
-        //yield return null ??
+        Debug.Log("Destroy the AR Session");
+        arCoreSession.enabled = false;
+        //ARCoreSessionConfig arCoreSessionConfig = arCoreSession.SessionConfig;
+        DestroyImmediate(arCoreSession);
+        Debug.Log("Is arcoreSession destroyed?: " + (ARCoreDevice.GetComponent<ARCoreSession>() == null));
+        ARCoreWorldOriginHelperClass.ResetPlanes();
+        yield return null;
         arCoreSession = ARCoreDevice.AddComponent<ARCoreSession>();
-        arCoreSession.SessionConfig = arCoreSessionConfig;
+        arCoreSession.SessionConfig = arCoreSessionConfigPrefab;
         arCoreSession.enabled = true;
+        Debug.Log("New arcore session?: " + (ARCoreDevice.GetComponent<ARCoreSession>() != null));
     }
 }
 

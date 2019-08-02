@@ -37,15 +37,17 @@ public class Tool : NetworkBehaviour
         switch (imageDatabaseindex)
         {
             case 0: ToolType = ToolType.BRUSH;
+                arCoreController.ShowMessage("Mit der Bürste kannst du Blöcke aus Sand und Stein langsam abtragen. Halte dafür die Bürste in den Block. Dieser Vorgang ist sehr schonend und kann Knochen zu Tage bringen!", 10);
                 break;
             case 1:
             case 2: ToolType = ToolType.ROCKHAMMER;
+                arCoreController.ShowMessage("Mit dem Geologenhammer kannst du Blöcke aus Stein zerstören. Dafür muss die Schaufel die Blöcke berühren und wieder Abstand nehmen. Führe dies fort um den Block zu zerstören. \nVORSICHT: Diese Aktion kann auch die Knochen in den Blöcken zerstören. Wenn du sicher bist, dass ein Knochen enthalten ist, benutze lieber die Bürste.", 10);
                 break;
             case 3: ToolType = ToolType.SENSOR;
+                arCoreController.ShowMessage("Mit dem Sensor kannst du Blöcke analysieren und sehen, ob Knochen enthalten sind. Halte dafür den Sensor so, dass der orangene Strahl auf einen Block fällt. Wenn die gelbe Anzeige rechts unten komplett gefüllt ist, siehst du das Ergebnis.", 10);
                 break;
             case 4: ToolType = ToolType.SHOVEL;
-                break;
-            case 5: ToolType = ToolType.SHOVEL;
+                arCoreController.ShowMessage("Mit der Schaufel kannst du Blöcke aus Sand zerstören. Dafür muss die Schaufel die Blöcke berühren und wieder Abstand nehmen. Führe dies fort um den Block zu zerstören. \nVORSICHT: Diese Aktion kann auch die Knochen in den Blöcken zerstören. Wenn du sicher bist, dass ein Knochen enthalten ist, benutze lieber die Bürste.", 10);
                 break;
             default:
                 Debug.LogError("No Tooltype could be assigned.");

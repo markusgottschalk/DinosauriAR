@@ -27,7 +27,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using UnityEngine.Networking.Types;
-using UnityEngine.UI;
 
 /// <summary>
 /// Controller managing the network.
@@ -40,39 +39,9 @@ public class NetworkManagerController : MonoBehaviour
     public UIController UIController;
 
     /// <summary>
-    /// The Lobby Screen to see Available Rooms or create a new one.
-    /// </summary>
-    //public Canvas LobbyScreen;
-
-    /// <summary>
-    /// The snackbar text.
-    /// </summary>
-    //public Text SnackbarText;
-
-    /// <summary>
-    /// The Label showing the current active room.
-    /// </summary>
-    //public GameObject CurrentRoomLabel;
-
-    /// <summary>
     /// The Cloud Anchors Example Controller.
     /// </summary>
     public ARCoreController ARCoreController;
-
-    /// <summary>
-    /// The Panel containing the list of available rooms to join.
-    /// </summary>
-    //public GameObject RoomListPanel;
-
-    /// <summary>
-    /// Text indicating that no previous rooms exist.
-    /// </summary>
-    //public Text NoPreviousRoomsText;
-
-    /// <summary>
-    /// The prefab for a row in the available rooms list.
-    /// </summary>
-    //public GameObject JoinRoomListRowPrefab;
 
     /// <summary>
     /// The number of matches that will be shown.
@@ -86,17 +55,14 @@ public class NetworkManagerController : MonoBehaviour
     private MainNetworkManager MainNetworkManager;
 #pragma warning restore 618
 
+    /// <summary>
+    /// The Game Manager.
+    /// </summary>
     public GameManager GameManager;
 
     /// <summary>
-    /// The current room number.
+    /// A tuple describing the hosted room with network ID.
     /// </summary>
-    //private string m_CurrentRoomNumber;
-
-    /// <summary>
-    /// The Join Room buttons.
-    /// </summary>
-    //private List<GameObject> m_JoinRoomButtonsPool = new List<GameObject>();
     private (bool, NetworkID) roomHosted = (false, NetworkID.Invalid);
 
     /// <summary>
@@ -104,23 +70,11 @@ public class NetworkManagerController : MonoBehaviour
     /// </summary>
     public void Awake()
     {
-        // Initialize the pool of Join Room buttons.
-        //for (int i = 0; i < k_MatchPageSize; i++)
-        //{
-        //    GameObject button = Instantiate(JoinRoomListRowPrefab);
-        //    button.transform.SetParent(RoomListPanel.transform, false);
-        //    button.GetComponent<RectTransform>().anchoredPosition =
-        //        new Vector2(0, -100 - (200 * i));
-        //    button.SetActive(true);
-        //    button.GetComponentInChildren<Text>().text = string.Empty;
-        //    m_JoinRoomButtonsPool.Add(button);
-        //}
-
 #pragma warning disable 618
         MainNetworkManager = GetComponent<MainNetworkManager>();
 #pragma warning restore 618
 
-
+        //Start the Matchmaker and list all available matches
         MainNetworkManager.StartMatchMaker();
         MainNetworkManager.matchMaker.ListMatches(
             startPageNumber: 0,
@@ -133,20 +87,21 @@ public class NetworkManagerController : MonoBehaviour
             callback: (bool success, string extendedInfo, List<MatchInfoSnapshot> matches) => { _OnMatchList(success, extendedInfo, matches, string.Empty); }
 #pragma warning restore 618
             );
-        //_ChangeLobbyUIVisibility(true);
     }
 
 
     /// <summary>
-    /// Handles the user intent to create a new room.
+    /// Handles the user intent to create a new room with the name of the expedition and the name of the host so it can be shown on the list of available rooms.
     /// </summary>
+    /// <param name="matchName">The name of the expedition</param>
     public void CreateRoom(string matchName)
     {
-        MainNetworkManager.matchMaker.CreateMatch(matchName, MainNetworkManager.matchSize,
+        string matchANDhostName = matchName + "-" + GameManager.PlayerName;
+        MainNetworkManager.matchMaker.CreateMatch(matchANDhostName, MainNetworkManager.matchSize,
                                         true, string.Empty, string.Empty, string.Empty,
                                         0, 0,
 #pragma warning disable 618
-                                        (bool success, string extendedInfo, MatchInfo matchInfo) => { _OnMatchCreate(success, extendedInfo, matchInfo, matchName); }
+                                        (bool success, string extendedInfo, MatchInfo matchInfo) => { _OnMatchCreate(success, extendedInfo, matchInfo, matchANDhostName); }
 #pragma warning restore 618
                                         );
     }
@@ -159,23 +114,20 @@ public class NetworkManagerController : MonoBehaviour
     /// <param name="success">Indicates if the request succeeded.</param>
     /// <param name="extendedInfo">A text description for the error if success is false.</param>
     /// <param name="matchInfo">The information about the newly created match.</param>
+    /// <param name="matchANDhostName">The name of the expedition and the name of the host.</param>
 #pragma warning disable 618
-    private void _OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo, string matchName)
+    private void _OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo, string matchANDhostName)
 #pragma warning restore 618
     {
+        string matchName = matchANDhostName.Split('-')[0];
         MainNetworkManager.OnMatchCreate(success, extendedInfo, matchInfo);
-        UIController.OnMatchCreate(success, extendedInfo, matchName);
+        UIController.OnMatchCreate(success, extendedInfo, matchANDhostName);
 
         if (success)
         {
             roomHosted = (true, matchInfo.networkId);
             GameManager.StartExpedition(matchName);
         }
-
-        //m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
-        //_ChangeLobbyUIVisibility(false);
-        //SnackbarText.text = "Find a plane, tap to create a Cloud Anchor.";
-        //CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
     }
 
     public bool IsRoomHosted()
@@ -210,7 +162,7 @@ public class NetworkManagerController : MonoBehaviour
 
 
     /// <summary>
-    /// Handles the user intent to refresh the room list.
+    /// Handles the user intent to refresh the room list. The matchNameFilter is either <paramref name="expeditionName"/> or string.Empty. But the filter is a partial wildcard so it will find all matches containing the whole string (even when the matchName is "expeditionName-hostName").
     /// </summary>
     /// <param name="expeditionName">Refreshes specific expedition lists. String.empty refreshes whole list.</param>
     public void RefreshRoomList(string expeditionName)
@@ -236,121 +188,14 @@ public class NetworkManagerController : MonoBehaviour
     /// <param name="extendedInfo">A text description for the error if success is false.</param>
     /// <param name="matches">A list of matches corresponding to the filters set in the initial
     /// list request.</param>
+    /// <param name="expeditionNameSearchedFor">The original match filter.</param>
 #pragma warning disable 618
-    private void _OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matches, string expeditionName)
+    private void _OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matches, string expeditionNameSearchedFor)
 #pragma warning restore 618
     {
-        Dictionary<string, string> hostANDexpeditionNames = new Dictionary<string, string>();
-
         MainNetworkManager.OnMatchList(success, extendedInfo, matches);
-        if(matches != null)
-        {
-#pragma warning disable 618
-            foreach (MatchInfoSnapshot match in matches)
-#pragma warning restore 618
-            {
-                hostANDexpeditionNames.Add(match.hostNodeId.ToString(), match.name); //TODO: get PlayerName from NodeId... (at CreateRoom?)
-            }
-        }
-
-        UIController.OnMatchList(success, extendedInfo, expeditionName, hostANDexpeditionNames, matches);
-
-//            if (m_Manager.matches != null)
-//            {
-//                // Reset all buttons in the pool.
-//                foreach (GameObject button in m_JoinRoomButtonsPool)
-//                {
-//                    button.SetActive(false);
-//                    button.GetComponentInChildren<Button>().onClick.RemoveAllListeners();
-//                    button.GetComponentInChildren<Text>().text = string.Empty;
-//                }
-
-//                NoPreviousRoomsText.gameObject.SetActive(m_Manager.matches.Count == 0);
-
-//                // Add buttons for each existing match.
-//                int i = 0;
-//#pragma warning disable 618
-//                foreach (var match in m_Manager.matches)
-//#pragma warning restore 618
-//                {
-//                    if (i >= k_MatchPageSize)
-//                    {
-//                        break;
-//                    }
-
-//                    var text = "Room " + _GetRoomNumberFromNetworkId(match.networkId);
-//                    GameObject button = m_JoinRoomButtonsPool[i++];
-//                    button.GetComponentInChildren<Text>().text = text;
-//                    button.GetComponentInChildren<Button>().onClick.AddListener(() =>
-//                        _OnJoinRoomClicked(match));
-//                    button.SetActive(true);
-//                }
-//            }
+        UIController.OnMatchList(success, extendedInfo, expeditionNameSearchedFor, matches);
     }
-
-    ///// <summary>
-    ///// Callback indicating that the Cloud Anchor was instantiated and the host request was
-    ///// made.
-    ///// </summary>
-    ///// <param name="isHost">Indicates whether this player is the host.</param>
-    //public void OnAnchorInstantiated(bool isHost)
-    //{
-    //    if (isHost)
-    //    {
-    //        //SnackbarText.text = "Hosting Cloud Anchor...";
-    //    }
-    //    else
-    //    {
-    //        //SnackbarText.text =
-    //        //    "Cloud Anchor added to session! Attempting to resolve anchor...";
-    //    }
-    //}
-
-    ///// <summary>
-    ///// Callback indicating that the Cloud Anchor was hosted.
-    ///// </summary>
-    ///// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was hosted
-    ///// successfully.</param>
-    ///// <param name="response">The response string received.</param>
-    //public void OnAnchorHosted(bool success, string response)
-    //{
-    //    if (success)
-    //    {
-    //        //SnackbarText.text = "Cloud Anchor successfully hosted! Tap to place more stars.";
-    //    }
-    //    else
-    //    {
-    //        //SnackbarText.text = "Cloud Anchor could not be hosted. " + response;
-    //    }
-    //}
-
-    ///// <summary>
-    ///// Callback indicating that the Cloud Anchor was resolved.
-    ///// </summary>
-    ///// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was resolved
-    ///// successfully.</param>
-    ///// <param name="response">The response string received.</param>
-    //public void OnAnchorResolved(bool success, string response)
-    //{
-    //    if (success)
-    //    {
-    //        //SnackbarText.text = "Cloud Anchor successfully resolved! Tap to place more stars.";
-    //    }
-    //    else
-    //    {
-    //        //SnackbarText.text =
-    //        //    "Cloud Anchor could not be resolved. Will attempt again. " + response;
-    //    }
-    //}
-
-    ///// <summary>
-    ///// Use the snackbar to display the error message.
-    ///// </summary>
-    ///// <param name="errorMessage">The error message to be displayed on the snackbar.</param>
-    //public void ShowErrorMessage(string errorMessage)
-    //{
-    //    //SnackbarText.text = errorMessage;
-    //}
 
     /// <summary>
     /// Handles the user intent to join the room associated with the button clicked.
@@ -361,15 +206,10 @@ public class NetworkManagerController : MonoBehaviour
     public void OnJoinRoomClicked(MatchInfoSnapshot match)
 #pragma warning restore 618
     {
-        MainNetworkManager.matchName = match.name;
+        MainNetworkManager.matchName = match.name.Split('-')[0];
         MainNetworkManager.matchMaker.JoinMatch(match.networkId, string.Empty, string.Empty,
                                         string.Empty, 0, 0, _OnMatchJoined);
-        //CloudAnchorsExampleController.OnEnterResolvingModeClick();
     }
-
-
-
-        
 
     /// <summary>
     /// Callback that happens when a <see cref="NetworkMatch.JoinMatch"/> request has been
@@ -389,45 +229,6 @@ public class NetworkManagerController : MonoBehaviour
         {
             GameManager.JoinExpedition(MainNetworkManager.matchName);
         }
-        //if (!success)
-        //{
-        //    SnackbarText.text = "Could not join to match: " + extendedInfo;
-        //    return;
-        //}
-
-        //m_CurrentRoomNumber = _GetRoomNumberFromNetworkId(matchInfo.networkId);
-        //ChangeLobbyUIVisibility(false);
-        //SnackbarText.text = "Waiting for Cloud Anchor to be hosted...";
-        //CurrentRoomLabel.GetComponentInChildren<Text>().text = "Room: " + m_CurrentRoomNumber;
     }
-
-    ///// <summary>
-    ///// Changes the lobby UI Visibility by showing or hiding the buttons.
-    ///// </summary>
-    ///// <param name="visible">If set to <c>true</c> the lobby UI will be visible. It will be
-    ///// hidden otherwise.</param>
-    //private void _ChangeLobbyUIVisibility(bool visible)
-    //{
-    //    LobbyScreen.gameObject.SetActive(visible);
-    //    //CurrentRoomLabel.gameObject.SetActive(!visible);
-    //    foreach (GameObject button in m_JoinRoomButtonsPool)
-    //    {
-    //        bool active = visible && button.GetComponentInChildren<Text>().text != string.Empty;
-    //        button.SetActive(active);
-    //    }
-    //}
-        
-    //public bool IsClientConnected()
-    //{
-    //    return MainNetworkManager.IsClientConnected();
-    //}
-
-
-
-    //private string _GetRoomNumberFromNetworkId(NetworkID networkID)
-    //{
-    //    return (System.Convert.ToInt64(networkID.ToString()) % 10000).ToString();
-    //}
-
 }
 

@@ -45,6 +45,9 @@ public class Sensor : Tool
     [SerializeField]
     private Sprite sensorNoBones = null;
 
+    /// <summary>
+    /// The duration for which the sensorray has to be directed to the block to activate effect.
+    /// </summary>
     public float SecondsToAnalyze;
     private float timer = 0;
     private bool fillAmountLerpRunning = false;
@@ -54,7 +57,6 @@ public class Sensor : Tool
         base.OnStartAuthority();
 
         analyzer = new Ray(sensorAnalyzerLine.transform.position, sensorAnalyzerLine.transform.forward);
-        //timer = SecondsToAnalyze;       //when analyzing a block it should immediately start without waiting
         timer = 0;
     }
 
@@ -72,7 +74,6 @@ public class Sensor : Tool
                 {
                     //set length of line renderer to distance of ray until hit -> line renderer won't go through objects
                     sensorAnalyzerLine.SetPosition(1, new Vector3(0, 0, hit.distance*9));
-                    //Debug.Log("SensorAnalyzerLine length: " + hit.distance);
 
                     if (hit.transform.CompareTag("BlockGraphics"))
                     {

@@ -18,7 +18,6 @@ public class ExpeditionLobbyScreen : UIScreen
 
     void Start()
     {
-        //expeditionLobbyScreen = gameObject.GetComponent<Canvas>();
         titleText = title.GetComponent<TextMeshProUGUI>().text;
     }
 
@@ -39,11 +38,6 @@ public class ExpeditionLobbyScreen : UIScreen
     {
         expeditionLobbyScreen.enabled = false;
     }
-
-    //public void OnStartExpeditionClicked()
-    //{
-    //    UIController.ExpeditionLobby_StartExpedition();
-    //}
 
     public void ChangeLeaderName(string newName)
     {

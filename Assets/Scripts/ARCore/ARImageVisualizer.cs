@@ -5,23 +5,30 @@ using GoogleARCore;
 
 public class ARImageVisualizer : MonoBehaviour
 {
-    //The augmented image to visualize. Will be set by the ARCoreController.
+    /// <summary>
+    /// The augmented image to visualize. Will be set by the ARCoreController.
+    /// </summary>
     public AugmentedImage Image;
 
-
+    /// <summary>
+    /// The virtual object to be shown.
+    /// </summary>
     private GameObject augmentedObject = null;
+
+    /// <summary>
+    /// The network ID of the virtual object.
+    /// </summary>
 #pragma warning disable 618
     private UnityEngine.Networking.NetworkInstanceId augmentedObjectNetworkID;
 #pragma warning restore 618
+
     private bool requestToSpawn = false;
-    //private ARCoreWorldOriginHelperClass ARCoreWorldOriginHelperClass;
     private LocalPlayerControllerClass localPlayer;
 
     private void Start()
     {
-        //ARCoreWorldOriginHelperClass = GameObject.Find("ARCoreWorldOriginHelperClass").GetComponent<ARCoreWorldOriginHelperClass>();
         localPlayer = GameObject.Find("LocalPlayer").GetComponent<LocalPlayerControllerClass>();
-        Debug.Log("Visualizer started");
+        //Debug.Log("Visualizer started");
     }
 
     void Update()
@@ -30,13 +37,13 @@ public class ARImageVisualizer : MonoBehaviour
         //if no prefab was already created, create one
         if (augmentedObject == null && !requestToSpawn)
         {
-            Debug.Log("Visualizer wants to spawn tool");
+            //Debug.Log("Visualizer wants to spawn tool");
             localPlayer.CmdSpawnTool(Image.DatabaseIndex);      //Send request for Instantiating tool to server
             requestToSpawn = true;
             return;
         }
 
-        //if the request has not be resolved yet
+        //if the request has not been resolved yet
         if (requestToSpawn)
         {
             return;

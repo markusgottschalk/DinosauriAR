@@ -5,12 +5,18 @@ using UnityEngine.Networking;
 
 public class Block : MonoBehaviour
 {
+    /// <summary>
+    /// The cloud anchor.
+    /// </summary>
     private CloudAnchorController cloudAnchor;
 
+    /// <summary>
+    /// The materials of the block. Material 1 is for <see cref="BlockMaterial"/> and cracks <see cref="CurrentStatus"/>. Material 2 is for analyzed block <see cref="PercentAnalyzed"/> and showing bones or not.
+    /// </summary>
     private Material[] currentMaterials;
 
     /// <summary>
-    /// The rate with which the block will disappear when the brush is used. Depends on localScale.y
+    /// The rate with which the block will disappear when the brush is used. Depends on localScale.up
     /// </summary>
     private float explorationRate;
 
@@ -149,7 +155,7 @@ public class Block : MonoBehaviour
 
     void Start()
     {
-        cloudAnchor = this.gameObject.transform.root.GetComponent<CloudAnchorController>();
+        cloudAnchor = this.gameObject.transform.root.gameObject.GetComponent<CloudAnchorController>();
 
         currentMaterials = transform.GetChild(0).GetComponent<MeshRenderer>().materials;
         changeMaterial(crackMaterials[CurrentStatus], boneMaterials[2]);
@@ -165,33 +171,57 @@ public class Block : MonoBehaviour
     /// <param name="withBrush">Checks if it gets destroyed with brush or another tool</param>
     private void destroy(bool withBrush)
     {
-        if (!withBrush)
+        if (!withBrush)     //if block is completely destroyed without the brush
         {
             if (BonesAvailable)
             {
+                transform.parent.gameObject.GetComponent<Bones>().BlockDestroyed(false);
                 Destroy(transform.parent.gameObject);
                 return;
             }
         }
+
+        if (BonesAvailable)
+        {
+            transform.parent.gameObject.GetComponent<Bones>().BlockDestroyed(true);
+        }
+
         Destroy(this.gameObject);
     }
 
+    /// <summary>
+    /// Command to server send with already changed status of cracks.
+    /// </summary>
+    /// <param name="statusChange">The new status</param>
     public void ChangeDestroyStatus(int statusChange)
     {
         //Debug.Log("BLOCK: change current status from " + CurrentStatus + " to " + (CurrentStatus + statusChange));
-        cloudAnchor.CmdSetBlock(this.gameObject.name, CurrentStatus + statusChange);   //send already changed status to server
+        cloudAnchor.CmdSetBlock(this.gameObject.name, CurrentStatus + statusChange);
     }
 
+    /// <summary>
+    /// Command to server with already changed status of percent analyzed.
+    /// </summary>
+    /// <param name="statusChange">The new percent analyzed status</param>
     public void ChangePercentAnalyzed(int statusChange)
     {
         cloudAnchor.CmdSetBlockPercentAnalyzed(this.gameObject.name, PercentAnalyzed + statusChange);
     }
 
+    /// <summary>
+    /// Command to server with already changed status of exploration state (localScale.up).
+    /// </summary>
+    /// <param name="statusChange">The new exploration status</param>
     public void ChangeExplorationStatus(int statusChange)
     {
         cloudAnchor.CmdSetBlockExplorationStatus(this.gameObject.name, ExplorationStatus + statusChange);
     }
 
+    /// <summary>
+    /// Change a specific material.
+    /// </summary>
+    /// <param name="firstMaterial">The first material</param>
+    /// <param name="secondMaterial">The second material</param>
     private void changeMaterial(Material firstMaterial, Material secondMaterial)
     {
         if(firstMaterial == null)
@@ -207,6 +237,11 @@ public class Block : MonoBehaviour
         transform.GetChild(0).GetComponent<MeshRenderer>().materials = currentMaterials;
     }
 
+    /// <summary>
+    /// Show smooth animation when updating localScale.
+    /// </summary>
+    /// <param name="oldScale">The old scale</param>
+    /// <param name="newScale">The new scale</param>
     private IEnumerator lerpToNewScale(Vector3 oldScale, Vector3 newScale)
     {
         float elapsedTime = 0;

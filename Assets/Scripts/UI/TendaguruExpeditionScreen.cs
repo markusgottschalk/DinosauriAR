@@ -11,16 +11,22 @@ public class TendaguruExpeditionScreen : UIScreen
     [SerializeField]
     private string expeditionName = default;
 
+    /// <summary>
+    /// The refresh icons which will be shown when the refresh button has been clicked.
+    /// </summary>
+    [SerializeField]
+    private List<Sprite> refreshIconsToRotate = null;
+    [SerializeField]
+    private GameObject refreshGameObject = null;
+
     public UIController UIController;
 
     [SerializeField]
     private Button joinExpedition = default;
 
-
-    // Start is called before the first frame update
     void Start()
     {
-        //tendaguruExpeditionScreen = gameObject.GetComponent<Canvas>();
+        
     }
 
     public override void ShowScreen()
@@ -33,7 +39,7 @@ public class TendaguruExpeditionScreen : UIScreen
         tendaguruExpeditionScreen.enabled = false;
     }
 
-    public void OnTendaguruExpeditionPrepareClicked()
+    public void OnTendaguruExpeditionStartClicked()
     {
         UIController.CreateMatch(expeditionName);
     }
@@ -43,13 +49,37 @@ public class TendaguruExpeditionScreen : UIScreen
         UIController.TendaguruExpedition_ExpeditionsLobby();
     }
 
+    /// <summary>
+    /// Change the state of the join expedition button.
+    /// </summary>
+    /// <param name="interactable">The state of the button</param>
     public void ChangeJoinExpeditionButton(bool interactable)
     {
         joinExpedition.interactable = interactable;
     }
 
+    /// <summary>
+    /// When refresh button has been clicked, "rotate" the refresh button to give feedback that the click was successful, even when no new expeditions are shown.
+    /// </summary>
     public void OnTendaguruExpeditionRefreshClicked()
     {
+        StartCoroutine(rotateRefreshIcon(2));
         UIController.RefreshExpeditionRoomList(expeditionName);
+    }
+
+    private IEnumerator rotateRefreshIcon(float seconds)
+    {
+        int i = 0;
+        while(seconds > 0)
+        {
+            refreshGameObject.GetComponent<Image>().sprite = refreshIconsToRotate[i];
+            i++;
+            if(i >= refreshIconsToRotate.Count)
+            {
+                i = 0;
+            }
+            seconds -= 0.5f;
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 }

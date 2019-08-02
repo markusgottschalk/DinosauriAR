@@ -32,16 +32,14 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning restore 618
 {
     /// <summary>
-    /// The Star model that will represent networked objects in the scene.
-    /// </summary>
-    public GameObject StarPrefab;
-
-    /// <summary>
     /// The Anchor model that will represent the anchor in the scene.
     /// </summary>
     public GameObject AnchorPrefab;
 
-    public string playerName; //TODO: get Playername from GameManager
+    /// <summary>
+    /// The name of the player. 
+    /// </summary>
+    public string playerName { get; private set; }
 
     /// <summary>
     /// The player object prefab which should be spawned by the server. 
@@ -51,6 +49,9 @@ public class LocalPlayerControllerClass : NetworkBehaviour
     //The prefabs to visualize on different images. Which visualized object for which image is used depends on position on imageList -> position 0: image in databse with position:0...
     public List<GameObject> VisualizedObjects;
 
+    /// <summary>
+    /// The blocks from the expedition which needs synchronization with the host. 
+    /// </summary>
     private Dictionary<string, GameObject> blocksOnClientSynchronize;
 
     /// <summary>
@@ -73,6 +74,7 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         {
             blocksOnClientSynchronize.Add(block.gameObject.name, block);
         }
+        playerName = GameObject.Find("GameManager").GetComponent<GameManager>().PlayerName;
     }
 
     /// <summary>
@@ -106,25 +108,6 @@ public class LocalPlayerControllerClass : NetworkBehaviour
             }
         }
         
-    }
-
-    /// <summary>
-    /// A command run on the server that will spawn the Star prefab in all clients.
-    /// </summary>
-    /// <param name="position">Position of the object to be instantiated.</param>
-    /// <param name="rotation">Rotation of the object to be instantiated.</param>
-#pragma warning disable 618
-    [Command]
-#pragma warning restore 618
-    public void CmdSpawnStar(Vector3 position, Quaternion rotation)
-    {
-        // Instantiate Star model at the hit pose.
-        var starObject = Instantiate(StarPrefab, position, rotation);
-
-        // Spawn the object in all clients.
-#pragma warning disable 618
-        NetworkServer.Spawn(starObject);
-#pragma warning restore 618
     }
 
     /// <summary>
@@ -223,7 +206,7 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning restore 618
         GameObject block = anchor.transform.FindDeepChild(name).gameObject;
         block.GetComponent<Block>().CurrentStatus = currentStatus;
-        Debug.Log("SERVER: change " + name + " to " + currentStatus);
+
         RpcChangeBlockStatus(anchor, name, currentStatus);
     }
 
@@ -238,11 +221,9 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning restore 618
     public void RpcChangeBlockStatus(GameObject anchor, string name, int currentStatus)
     {
-        Debug.Log("ONCLIENT, change " + name);
         Transform block = anchor.transform.FindDeepChild(name);
         if (block != null)
         {
-            Debug.Log(name + " changed to " + currentStatus);
             block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
         }
     }
@@ -317,6 +298,10 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Command to update all blocks. If all blocks are updated, call TargetRPC to the client.
+    /// </summary>
+    /// <param name="netID">The net ID of the cloud anchor</param>
 #pragma warning disable 618
     [Command]
     public void CmdUpdateAllBlocks(NetworkInstanceId netID)
@@ -326,6 +311,7 @@ public class LocalPlayerControllerClass : NetworkBehaviour
 #pragma warning restore 618
         //Debug.Log("SERVER: number of blocks: " + blocks.Length);
 
+        //Send update of each block to the client
         foreach (GameObject blockGO in blocks)
         {
             Block block = blockGO.GetComponent<Block>();
@@ -336,6 +322,15 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         TargetUpdateAllBlocksEnd(connectionToClient);
     }
 
+    /// <summary>
+    /// RPC to specific client with update of one block. 
+    /// </summary>
+    /// <param name="client">The client</param>
+    /// <param name="anchor">The cloud anchor</param>
+    /// <param name="blockName">The name of the block as identifier</param>
+    /// <param name="currentStatus">The updated current status</param>
+    /// <param name="percentAnalyzed">The updated percent analyzed</param>
+    /// <param name="explorationStatus">The updated exploration status</param>
 #pragma warning disable 618
     [TargetRpc]
     public void TargetUpdateAllBlocks(NetworkConnection client, GameObject anchor, string blockName, int currentStatus, int percentAnalyzed, int explorationStatus)
@@ -355,7 +350,7 @@ public class LocalPlayerControllerClass : NetworkBehaviour
     }
 
     /// <summary>
-    /// Function which gets called on the client when the synchronization of the blocks is finished.
+    /// Function which gets called on the client when the synchronization of the blocks is finished. Checks with own list of all blocks. If there are any blocks which are already destroyed on the server but not on the client, send another command to server.
     /// </summary>
     /// <param name="client">The client</param>
 #pragma warning disable 618
