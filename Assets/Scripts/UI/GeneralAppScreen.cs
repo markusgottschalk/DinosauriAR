@@ -21,6 +21,8 @@ public class GeneralAppScreen : UIScreen
     [SerializeField]
     private GameObject endExpeditionButton = default;
 
+    private bool successExpedition = false;
+
     /// <summary>
     /// The RawImage that provides rotating hand animation.
     /// </summary>
@@ -104,23 +106,32 @@ public class GeneralAppScreen : UIScreen
     public void ShowEndExpeditionButton(bool active, bool success)
     {
         endExpeditionButton.SetActive(active);
-        endExpeditionButton.GetComponent<Button>().onClick.AddListener(delegate { ExitExpedition(success); });
+        successExpedition = success;
+        endExpeditionButton.GetComponent<Button>().onClick.AddListener(delegate { ExitExpedition(); });
+    }
+
+    public void ShowEndExpeditionButton(bool active)
+    {
+        endExpeditionButton.SetActive(active);
     }
 
     /// <summary>
     /// Exits the expedition when it has been finished. Show new screen with more information if it was successful. Go back to the expeditions screen if it was not.
     /// </summary>
-    /// <param name="success"></param>
-    public void ExitExpedition(bool success)
+    public void ExitExpedition()
     {
-        if (success)
+        if (successExpedition)
         {
             UIController.ARScreen_TengaduruExpeditionEnd();
+            UIController.HideMessage();
         }
         else
         {
             UIController.TendaguruExpeditionEnd_Expeditions();
+            UIController.HideMessage();
         }
+        ShowEndExpeditionButton(false);
+        successExpedition = false;
     }
 
     /// <summary>

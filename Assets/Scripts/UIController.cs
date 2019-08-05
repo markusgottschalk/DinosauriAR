@@ -32,6 +32,8 @@ public class UIController : MonoBehaviour
     /// </summary>
     private IEnumerator messageCoroutine = null;
 
+    public bool ExpeditionEnded { get; private set; } = false;
+
     /// <summary>
     /// The Start method. Hide all screens except the starting and general app screen.
     /// </summary>
@@ -109,7 +111,8 @@ public class UIController : MonoBehaviour
         string matchName = matchANDhostName.Split('-')[0];
         if (!success)
         {
-            ShowMessage("Fehler: Es konnte keine Expedition erstellt werden. " + extendedInfo, 5);
+            ShowMessage("Fehler: Es konnte keine Expedition erstellt werden. Verbinde dich mit dem Internet und versuche es erneut. ", 5);
+            Debug.LogError("Error, expedition could not be created. " + extendedInfo);
         }
         else
         {
@@ -134,14 +137,9 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            ShowMessage("Fehler: Die Expedition konnte nicht beendet werden! " + extendedInfo, 5);
+            Debug.LogError("Error: The expedition could not be exited. " + extendedInfo);
+            //ShowMessage("Fehler: Die Expedition konnte nicht beendet werden! " + extendedInfo, 5);
         }
-        else
-        {
-            UIScreen previousScreen = previousScreens.Pop();
-            previousScreen.ShowScreen();
-        }
-        GeneralAppScreen.ShowSettingsButton(true);
     }
 
     /// <summary>
@@ -166,7 +164,8 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            ShowMessage("Fehler: Die laufenden Expeditionen konnten nicht identifiziert werden! " + extendedInfo, 5);
+            ShowMessage("Fehler: Die laufenden Expeditionen konnten nicht identifiziert werden! Verbinde dich mit dem Internet und versuche es erneut. ", 5);
+            Debug.LogError("Error, the active expeditions could not be retrieved. " + extendedInfo);
         }
         else
         {
@@ -268,12 +267,14 @@ public class UIController : MonoBehaviour
     {
         if (!success)
         {
-            ShowMessage("Fehler: Der Expedition konnte nicht beigetreten werden. " + extendedInfo, 5);
+            ShowMessage("Fehler: Der Expedition konnte nicht beigetreten werden. Verbinde dich mit dem Internet und versuche es erneut. ", 5);
+            Debug.LogError("Error, expedition could not be joined. " + extendedInfo);
             return;
         }
         ExpeditionsLobbyScreen.HideScreen();
         GeneralAppScreen.HideBackButton();
         GeneralAppScreen.ShowSettingsButton(false);
+        activeScreen = null;
 
         ShowMessage("Warte auf die Erstellung der Expedition...", 5);
     }
@@ -300,14 +301,23 @@ public class UIController : MonoBehaviour
     }
 
     /// <summary>
-    /// Transition from Tendaguru expedition end screen to expeditions screen when the expedition overview button or the exit expedition button (when the expedition was unsuccessfull) has been clicked.
+    /// Transition from Tendaguru expedition end screen to expeditions screen when the expedition overview button or the exit expedition button (when the expedition was unsuccessful) has been clicked.
     /// </summary>
     public void TendaguruExpeditionEnd_Expeditions()
     {
+        ExpeditionEnded = false;
         TendaguruExpeditionEndScreen.HideScreen();
         ExpeditionsScreen.ShowScreen();
         GeneralAppScreen.ShowSettingsButton(true);
         GeneralAppScreen.ShowBackButton();
+
+        //delete all Screens on stack after expeditions overview
+        while(previousScreens.Peek() != ExpeditionsScreen)
+        {
+            previousScreens.Pop();
+        }
+        previousScreens.Pop();
+
         activeScreen = ExpeditionsScreen;
     }
 
@@ -447,7 +457,7 @@ public class UIController : MonoBehaviour
     {
         if (success)
         {
-            ShowMessage("Die Expedition wurde erfolgreich erstellt. Aktiviere nun ein Werkzeug indem du es mit der Kamera aus verschiedenen Richtungen anschaust.", 10);
+            ShowMessage("Die Expedition wurde erfolgreich erstellt. Aktiviere nun ein Werkzeug indem du es mit der Kamera aus verschiedenen Richtungen anschaust während es still liegt. ", 10);
         }
         else
         {
@@ -465,7 +475,7 @@ public class UIController : MonoBehaviour
     {
         if (success)
         {
-            ShowMessage("Die Expedition wird dir jetzt angezeigt. Aktiviere nun ein Werkzeug indem du es mit der Kamera aus verschiedenen Richtungen anschaust.", 10);
+            ShowMessage("Die Expedition wird dir jetzt angezeigt. Aktiviere nun ein Werkzeug indem du es mit der Kamera aus verschiedenen Richtungen anschaust während es still liegt.", 10);
         }
         else
         {
@@ -505,9 +515,36 @@ public class UIController : MonoBehaviour
             ShowMessage("Ihr habt es geschafft die Expedition zu beenden. Leider konntet ihr nicht so viele Informationen sammeln um das komplette Skelett zu rekonstruieren. Versucht es doch ein weiteres Mal und startet die Expedition erneut.", 10);
         }
 
+        ExpeditionEnded = true;
         GeneralAppScreen.ShowEndExpeditionButton(true, success);
     }
 
+
+    /// <summary>
+    /// Callback that happens when the client disconnected from the server.
+    /// </summary>
+    public void OnDisconnectedFromServer()
+    {
+        NetworkManagerController.StartMatchMaker();
+        //if client is not in AR-mode, do nothing
+        if(activeScreen != null)
+        {
+            return;
+        }
+
+        //if it is still in AR-mode and the expedition ended (e.g. because host exits the expedition and shuts down the match), exit the expedition as well
+        if (ExpeditionEnded)
+        {
+            GeneralAppScreen.ExitExpedition();
+            return;
+        }
+
+        //if another error happens
+        ShowMessage("Es ist ein Fehler mit dem Netzwerk aufgetreten. Bitte starte die Anwendung erneut.", 5);
+        Debug.LogError("Network session disconnected!");
+
+        Invoke("LeavingApp", 5.0f);
+    }
 
 
     public void ExitExpedition()

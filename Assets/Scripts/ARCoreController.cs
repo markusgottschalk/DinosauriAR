@@ -43,11 +43,6 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public NetworkManagerController NetworkManagerController;
 
-    /// <summary>
-    /// The Main network manager.
-    /// </summary>
-    public MainNetworkManager MainNetworkManager;
-
     public UIController UIController;
     public GameManager GameManager;
 
@@ -174,9 +169,6 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public void Start()
     {
-        MainNetworkManager.OnClientConnected += _OnConnectedToServer;
-        MainNetworkManager.OnClientDisconnected += _OnDisconnectedFromServer;
-
         // A Name is provided to the Game Object so it can be found by other Scripts
         // instantiated as prefabs in the scene.
         gameObject.name = "ARCoreController";
@@ -407,7 +399,7 @@ public class ARCoreController : MonoBehaviour
     /// <summary>
     /// Callback that happens when the client successfully connected to the server.
     /// </summary>
-    private void _OnConnectedToServer()
+    public void OnConnectedToServer()
     {
         if (m_CurrentMode == ApplicationMode.Hosting)
         {
@@ -426,14 +418,6 @@ public class ARCoreController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Callback that happens when the client disconnected from the server.
-    /// </summary>
-    private void _OnDisconnectedFromServer()
-    {
-        _QuitWithReason("Es ist ein Fehler mit dem Netzwerk aufgetreten. Bitte starte die Anwendung erneut.");
-        Debug.LogError("Network session disconnected!");
-    }
 
     /// <summary>
     /// Instantiates the anchor object at the pose of the m_LastPlacedAnchor Anchor. This will
@@ -459,7 +443,7 @@ public class ARCoreController : MonoBehaviour
     /// <summary>
     /// End the expedition with success or no success.
     /// </summary>
-    /// <param name="success">If the expedition was successfull or not</param>
+    /// <param name="success">If the expedition was successful or not</param>
     public void EndExpedition(bool success)
     {
         UIController.EndExpedition(success);
@@ -558,7 +542,7 @@ public class ARCoreController : MonoBehaviour
     {
         ARCoreRoot.SetActive(false);
         _ResetStatus();
-        StartCoroutine(ResetARSession());
+        //StartCoroutine(ResetARSession());
     }
 
     public IEnumerator ResetARSession()

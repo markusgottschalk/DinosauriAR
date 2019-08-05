@@ -8,6 +8,7 @@ public class Bones : MonoBehaviour
     /// The specific message for each section of bones when found. 
     /// </summary>
     [SerializeField]
+    [TextArea]
     private string messageAboutBones = "";
 
     private CloudAnchorController cloudAnchorController;
@@ -31,7 +32,7 @@ public class Bones : MonoBehaviour
     {
         if (withBrush)
         {
-            cloudAnchorController.ShowMessage(messageAboutBones, 10);
+            cloudAnchorController.ShowMessage(messageAboutBones, 20);
             skeleton.AddFoundBones(this);
         }
         else

@@ -84,7 +84,7 @@ namespace GoogleARCore.Examples.Common
             m_Mesh = GetComponent<MeshFilter>().mesh;
             m_MeshRenderer = GetComponent<UnityEngine.MeshRenderer>();
 
-            //für jede detected plane...
+            //obejctpool for each detected plane
             plantPool = new List<GameObject>();
             for (int i = 0; i < maxPlants; i++)
             {

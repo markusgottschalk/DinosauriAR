@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt die linke Hinterkralle des Skeletts
-    ausgegraben! \\nDer Teil des Skeletts zeigt vier gef\xE4hrliche Zehen. Wahrscheinlich
+    ausgegraben! \nDer Teil des Skeletts zeigt vier gef\xE4hrliche Zehen. Wahrscheinlich
     wurden diese unter anderem zum Rei\xDFen der Beute benutzt. "
 --- !u!1 &1632200351084181795
 GameObject:
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt den Torso des Skeletts ausgegraben!
-    \\nDer Dinosaurier war anscheinend nicht besonders gro\xDF."
+    \nDer Dinosaurier war anscheinend nicht besonders gro\xDF."
 --- !u!1 &1881161010289632023
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,7 +119,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1881161010289632023}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.029999994, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 3154202191419514663}
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt den Sch\xE4del des Skeletts ausgegraben!
-    \\nDieser Dinosaurier muss eine flache und lange Schnauze gehabt haben. Die Z\xE4hne
+    \nDieser Dinosaurier muss eine flache und lange Schnauze gehabt haben. Die Z\xE4hne
     deuten auf einen Raubsaurier. "
 --- !u!1 &2962376490741329013
 GameObject:
@@ -309,7 +309,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt die rechte Hinterkralle des Skeletts
-    ausgegraben! \\nDer Teil des Skeletts zeigt vier gef\xE4hrliche Zehen. Wahrscheinlich
+    ausgegraben! \nDer Teil des Skeletts zeigt vier gef\xE4hrliche Zehen. Wahrscheinlich
     wurden diese unter anderem zum Rei\xDFen der Beute benutzt. "
 --- !u!1 &4731022032317937631
 GameObject:
@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt die linke Vorderkralle des Skeletts
-    ausgegraben! \\nDas Handskelett \xE4hnelt der Struktur der von V\xF6geln. Au\xDFerdem
+    ausgegraben! \nDas Handskelett \xE4hnelt der Struktur der von V\xF6geln. Au\xDFerdem
     sind drei stark gekr\xFCmmte Krallen zu sehen. "
 --- !u!1 &6213425210222447089
 GameObject:
@@ -405,7 +405,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt den Schwanz des Skeletts ausgegraben!
-    \\nDiese Knochen deuten auf eine hohe Wendigkeit des Dinosauriers. "
+    \nDiese Knochen deuten auf eine hohe Wendigkeit des Dinosauriers. "
 --- !u!1 &6385578081957056999
 GameObject:
   m_ObjectHideFlags: 0
@@ -430,7 +430,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6385578081957056999}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.029999994, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4687108337575280453}
@@ -471,7 +471,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6813407337887612375}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.03, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6078444016730745514}
@@ -542,7 +542,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageAboutBones: "Gl\xFCckwunsch, ihr habt die rechte Vorderkralle des Skeletts
-    ausgegraben! \\nDas Handskelett \xE4hnelt der Struktur der von V\xF6geln. Au\xDFerdem
+    ausgegraben! \nDas Handskelett \xE4hnelt der Struktur der von V\xF6geln. Au\xDFerdem
     sind drei stark gekr\xFCmmte Krallen zu sehen. "
 --- !u!1001 &69559101013825457
 PrefabInstance:
@@ -2826,7 +2826,7 @@ PrefabInstance:
     - target: {fileID: 2510887506969581418, guid: 593d173321d3bcb47a17e4c0e5f113af,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.029999994
       objectReference: {fileID: 0}
     - target: {fileID: 2510887506969581418, guid: 593d173321d3bcb47a17e4c0e5f113af,
         type: 3}
@@ -3630,7 +3630,7 @@ PrefabInstance:
     - target: {fileID: 7307901991986979973, guid: 6c62978f33885f844899b158781b68b1,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.958
+      value: 0.98
       objectReference: {fileID: 0}
     - target: {fileID: 7307901991986979973, guid: 6c62978f33885f844899b158781b68b1,
         type: 3}

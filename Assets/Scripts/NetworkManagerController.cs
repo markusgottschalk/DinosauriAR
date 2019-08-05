@@ -89,6 +89,12 @@ public class NetworkManagerController : MonoBehaviour
             );
     }
 
+    private void Start()
+    {
+        MainNetworkManager.OnClientConnected += ARCoreController.OnConnectedToServer;
+        MainNetworkManager.OnClientDisconnected += UIController.OnDisconnectedFromServer;
+    }
+
 
     /// <summary>
     /// Handles the user intent to create a new room with the name of the expedition and the name of the host so it can be shown on the list of available rooms.
@@ -138,12 +144,12 @@ public class NetworkManagerController : MonoBehaviour
     /// <summary>
     /// When a room is destroyed (e.g. by clicking on the back button while an own room is open).
     /// </summary>
-    public void DestroyRoom()
+    public void QuitMatch()
     {
         if (!roomHosted.Item1)
         {
-            Debug.Log("This is not your room. You can't destroy it.");
-            _OnMatchDestroy(false, "This is not your room.");
+            //Debug.Log("This is not your room. You can't destroy it.");
+            //_OnMatchDestroy(false, "This is not your room.");
             return;
         }
 
@@ -229,6 +235,11 @@ public class NetworkManagerController : MonoBehaviour
         {
             GameManager.JoinExpedition(MainNetworkManager.matchName);
         }
+    }
+
+    public void StartMatchMaker()
+    {
+        MainNetworkManager.StartMatchMaker();
     }
 }
 

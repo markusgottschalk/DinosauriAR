@@ -51,6 +51,7 @@ public class Sensor : Tool
     public float SecondsToAnalyze;
     private float timer = 0;
     private bool fillAmountLerpRunning = false;
+    IEnumerator lerpToAnalyzerStatus = null;
 
     public override void OnStartAuthority()
     {
@@ -82,7 +83,8 @@ public class Sensor : Tool
                         timer += Time.deltaTime;
                         if (!fillAmountLerpRunning)
                         {
-                            StartCoroutine(lerpToAnalyzeStatus((float)block.PercentAnalyzed / (float)block.getAnalyzeMax(), ((float)block.PercentAnalyzed + 1) / (float)block.getAnalyzeMax()));
+                            lerpToAnalyzerStatus = lerpToAnalyzeStatus((float)block.PercentAnalyzed / (float)block.getAnalyzeMax(), ((float)block.PercentAnalyzed + 1) / (float)block.getAnalyzeMax());
+                            StartCoroutine(lerpToAnalyzerStatus);
                         }
 
                         if (timer >= SecondsToAnalyze)
@@ -154,6 +156,13 @@ public class Sensor : Tool
             yield return null;
         }
         fillAmountLerpRunning = false;
-        yield return null;
+    }
+
+    /// <summary>
+    /// If sensor is deactivated because image was not recognized, free the coroutine when it is activated again
+    /// </summary>
+    private void OnEnable()
+    {
+        fillAmountLerpRunning = false;
     }
 }

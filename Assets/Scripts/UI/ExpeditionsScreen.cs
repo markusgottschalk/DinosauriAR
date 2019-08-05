@@ -9,7 +9,6 @@ public class ExpeditionsScreen : UIScreen
     private Canvas expeditionsScreen = default;
     public List<GameObject> expeditions = new List<GameObject>();
 
-
     public UIController UIController;
 
     /// <summary>
@@ -35,6 +34,7 @@ public class ExpeditionsScreen : UIScreen
             UIController.ShowMessage("Hier kannst du verschiedene Expeditionen auswählen, die du gerne durchführen würdest. Wenn eine Expedition bereits aktiv ist, wird dies auch angezeigt.", 5);
             infoMessageWasShown = true;
         }
+        UIController.RefreshExpeditionRoomList(string.Empty);
     }
 
     public override void HideScreen()

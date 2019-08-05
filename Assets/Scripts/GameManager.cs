@@ -133,7 +133,7 @@ public class GameManager : MonoBehaviour
     {
         ARCoreController.QuitARMode();
         UICamera.SetActive(true);
-        NetworkManagerController.DestroyRoom();
+        NetworkManagerController.QuitMatch();
     }
 
     /// <summary>

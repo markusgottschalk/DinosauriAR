@@ -43,7 +43,7 @@ public class Block : MonoBehaviour
 
             if (explorationStatus == explorationStatusMax)
             {
-                destroy(true);
+                DestroyBlock(true);
             }
         }
     }
@@ -138,7 +138,7 @@ public class Block : MonoBehaviour
                 if (value >= maxStatus)
                 {
                     currentStatus = maxStatus;
-                    destroy(false);
+                    DestroyBlock(false);
                 }
                 else
                 {
@@ -169,7 +169,7 @@ public class Block : MonoBehaviour
     /// Destroys the block. When there are bones, destroy the parent of the block and therefore destroy the bones but only when using another tool than the brush. The brush only destroys the block, never anything else
     /// </summary>
     /// <param name="withBrush">Checks if it gets destroyed with brush or another tool</param>
-    private void destroy(bool withBrush)
+    public void DestroyBlock(bool withBrush)
     {
         if (!withBrush)     //if block is completely destroyed without the brush
         {
@@ -260,5 +260,4 @@ public class Block : MonoBehaviour
     {
         return analyzeMax;
     }
-
 }

@@ -224,7 +224,11 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         Transform block = anchor.transform.FindDeepChild(name);
         if (block != null)
         {
-            block.gameObject.GetComponent<Block>().CurrentStatus = currentStatus;
+            Block foundBlock = block.gameObject.GetComponent<Block>();
+            if(foundBlock.CurrentStatus != currentStatus)
+            {
+                foundBlock.CurrentStatus = currentStatus;
+            }
         }
     }
 
@@ -259,7 +263,11 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         Transform block = anchor.transform.FindDeepChild(name);
         if (block != null)
         {
-            block.gameObject.GetComponent<Block>().PercentAnalyzed = percentAnalyzed;
+            Block foundBlock = block.gameObject.GetComponent<Block>();
+            if(foundBlock.PercentAnalyzed != percentAnalyzed)
+            {
+                foundBlock.PercentAnalyzed = percentAnalyzed;
+            }
         }
     }
 
@@ -294,7 +302,11 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         Transform block = anchor.transform.FindDeepChild(name);
         if (block != null)
         {
-            block.gameObject.GetComponent<Block>().ExplorationStatus = explorationStatus;
+            Block foundBlock = block.gameObject.GetComponent<Block>();
+            if (foundBlock.ExplorationStatus != explorationStatus)
+            {
+                foundBlock.ExplorationStatus = explorationStatus;
+            }
         }
     }
 
@@ -382,11 +394,11 @@ public class LocalPlayerControllerClass : NetworkBehaviour
         GameObject parentBlock = GameObject.Find(parentBlockName);
         if(parentBlock == null)
         {
-            TargetDestroySpecificBlock(connectionToClient, parentBlockName);
+            TargetDestroySpecificBlock(connectionToClient, childBlockName, true);
         }
         else
         {
-            TargetDestroySpecificBlock(connectionToClient, childBlockName);
+            TargetDestroySpecificBlock(connectionToClient, childBlockName, false);
         }
     }
 
@@ -397,13 +409,20 @@ public class LocalPlayerControllerClass : NetworkBehaviour
     /// <param name="blockNameToDestroy">The gameObject to destroy</param>
 #pragma warning disable 618
     [TargetRpc]
-    public void TargetDestroySpecificBlock(NetworkConnection client, string blockNameToDestroy)
+    public void TargetDestroySpecificBlock(NetworkConnection client, string blockNameToDestroy, bool bonesDestroyed)
 #pragma warning restore 618
     {
         GameObject blockToDestroy = GameObject.Find(blockNameToDestroy);
         if(blockToDestroy != null)
         {
-            Destroy(blockToDestroy);
+            if (bonesDestroyed)
+            {
+                blockToDestroy.GetComponent<Block>().DestroyBlock(false);
+            }
+            else
+            {
+                blockToDestroy.GetComponent<Block>().DestroyBlock(true);
+            }
         }
     }
 }
