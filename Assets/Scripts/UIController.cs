@@ -85,7 +85,6 @@ public class UIController : MonoBehaviour
     {
         TendaguruExpeditionScreen.HideScreen();
         previousScreens.Push(TendaguruExpeditionScreen);
-        GeneralAppScreen.HideBackButton();
         GeneralAppScreen.ShowSettingsButton(false);
         activeScreen = null;                        //null means that the app is in AR mode
     }
@@ -272,7 +271,6 @@ public class UIController : MonoBehaviour
             return;
         }
         ExpeditionsLobbyScreen.HideScreen();
-        GeneralAppScreen.HideBackButton();
         GeneralAppScreen.ShowSettingsButton(false);
         activeScreen = null;
 
@@ -342,6 +340,7 @@ public class UIController : MonoBehaviour
     /// </summary>
     public void BackButtonWasClicked()
     {
+        HideMessage();
         //if the active screen is UI, hide this screen
         if(activeScreen != null)
         {
@@ -350,8 +349,7 @@ public class UIController : MonoBehaviour
         //else if the active screen is AR, go back to UI
         else
         {
-            //GameManager.QuitExpedition();
-            //return;
+            GameManager.QuitExpedition();
         }
 
         if(activeScreen == SettingsScreen)
@@ -517,6 +515,7 @@ public class UIController : MonoBehaviour
 
         ExpeditionEnded = true;
         GeneralAppScreen.ShowEndExpeditionButton(true, success);
+        GeneralAppScreen.HideBackButton();
     }
 
 
@@ -540,10 +539,10 @@ public class UIController : MonoBehaviour
         }
 
         //if another error happens
-        ShowMessage("Es ist ein Fehler mit dem Netzwerk aufgetreten. Bitte starte die Anwendung erneut.", 5);
+        ShowMessage("Es ist ein Fehler mit dem Netzwerk aufgetreten. Bitte starte die Expedition erneut.", 5);
         Debug.LogError("Network session disconnected!");
 
-        Invoke("LeavingApp", 5.0f);
+        Invoke("BackButtonWasClicked", 5.0f);
     }
 
 

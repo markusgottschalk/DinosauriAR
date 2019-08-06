@@ -191,7 +191,7 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
         return new Pose(position, rotation);
     }
 
-    public void ResetPlanes()
+    public void Reset()
     {
         Debug.Log("Destroy all planes");
         foreach (GameObject planeObject in VisualizedPlanes)
@@ -199,6 +199,14 @@ public class ARCoreWorldOriginHelperClass : MonoBehaviour
             Destroy(planeObject);
         }
         VisualizedPlanes.Clear();
+
+        m_NewPlanes.Clear();
+        m_PlanesBeforeOrigin.Clear();
+
+        m_IsOriginPlaced = false;
+
+        ARCoreDeviceTransform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+        AugmentedImages.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 }
 

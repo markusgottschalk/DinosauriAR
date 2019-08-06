@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
             //and the Application is in AR-mode (Hosting)
             if(ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Hosting || ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Resolving)
             {
-                //QuitExpedition();     //doesn't work yet
+                QuitExpedition();
             }
 
         }

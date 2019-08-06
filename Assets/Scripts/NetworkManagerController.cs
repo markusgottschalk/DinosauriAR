@@ -150,6 +150,8 @@ public class NetworkManagerController : MonoBehaviour
         {
             //Debug.Log("This is not your room. You can't destroy it.");
             //_OnMatchDestroy(false, "This is not your room.");
+            MainNetworkManager.StopClient();
+            MainNetworkManager.StartMatchMaker();
             return;
         }
 
@@ -164,6 +166,8 @@ public class NetworkManagerController : MonoBehaviour
         {
             roomHosted = (false, NetworkID.Invalid);
         }
+        MainNetworkManager.StopHost();
+        MainNetworkManager.StartMatchMaker();
     }
 
 

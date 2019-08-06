@@ -160,6 +160,7 @@ namespace GoogleARCore.CrossPlatform
                         "The anchor on GameObject {0} can no longer update.",
                         this.gameObject != null ? this.gameObject.name : "Unknown");
                     m_IsSessionDestroyed = true;
+                    Destroy(this.gameObject);
                 }
             }
 

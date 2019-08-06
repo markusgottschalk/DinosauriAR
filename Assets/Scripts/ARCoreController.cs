@@ -175,8 +175,6 @@ public class ARCoreController : MonoBehaviour
         ARCoreRoot.SetActive(false);
         _ResetStatus();
         arCoreSession = ARCoreDevice.GetComponent<ARCoreSession>();
-        groundForExpedition = Instantiate(GroundPrefab);
-        groundForExpedition.SetActive(false);
     }
 
     /// <summary>
@@ -197,7 +195,7 @@ public class ARCoreController : MonoBehaviour
         Session.GetTrackables<AugmentedImage>(augmentedImages, TrackableQueryFilter.Updated);
 
         //Create visualizers for updated augmented images that are tracking and do not previously have a visualizer. Remove visualizers for stopped images.
-        foreach(AugmentedImage image in augmentedImages)
+        foreach (AugmentedImage image in augmentedImages)
         {
             //Debug.Log("Image found, Tracking State: " + image.TrackingState);
             ARImageVisualizer visualizer = null;
@@ -206,7 +204,7 @@ public class ARCoreController : MonoBehaviour
             visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
 
             //if no visualizer was found, add one
-            if(visualizer == null && image.TrackingState == TrackingState.Tracking)
+            if (visualizer == null && image.TrackingState == TrackingState.Tracking)
             {
                 //Debug.Log("Add visualizer");
                 visualizer = (ARImageVisualizer)Instantiate(ARImageVisualizer, image.CenterPose.position, image.CenterPose.rotation, AugmentedImages.transform);
@@ -220,7 +218,7 @@ public class ARCoreController : MonoBehaviour
                 Destroy(visualizer.transform.parent.gameObject);    //destroy visualizer
             }
 
-            if(visualizer != null)
+            if (visualizer != null)
             {
                 //always give the CentralImagePose to visualizer for the correct position
                 visualizer.SetTransform(image.CenterPose);
@@ -335,6 +333,9 @@ public class ARCoreController : MonoBehaviour
             _ResetStatus();
             Debug.Log("Reset ApplicationMode from Hosting to Ready.");
         }
+
+        groundForExpedition = Instantiate(GroundPrefab);
+        groundForExpedition.SetActive(false);
 
         ARCoreRoot.SetActive(true);
         m_CurrentMode = ApplicationMode.Hosting;
@@ -462,7 +463,21 @@ public class ARCoreController : MonoBehaviour
         }
 
         m_WorldOriginAnchor = null;
+
+        Destroy(groundForExpedition);
+        groundForExpedition = null;
+
+        m_IsOriginPlaced = false;
+        m_AnchorAlreadyInstantiated = false;
+        m_AnchorFinishedHosting = false;
+
+        m_LastHitPose = null;
+        firstTouch = false;
+
+        visualizers.Clear();
     }
+
+
 
     /// <summary>
     /// Check and update the application lifecycle.
@@ -540,24 +555,22 @@ public class ARCoreController : MonoBehaviour
     /// </summary>
     public void QuitARMode()
     {
-        ARCoreRoot.SetActive(false);
         _ResetStatus();
-        //StartCoroutine(ResetARSession());
+        StartCoroutine(ResetARSession());
     }
 
     public IEnumerator ResetARSession()
     {
         Debug.Log("Destroy the AR Session");
         arCoreSession.enabled = false;
-        //ARCoreSessionConfig arCoreSessionConfig = arCoreSession.SessionConfig;
         DestroyImmediate(arCoreSession);
-        Debug.Log("Is arcoreSession destroyed?: " + (ARCoreDevice.GetComponent<ARCoreSession>() == null));
-        ARCoreWorldOriginHelperClass.ResetPlanes();
-        yield return null;
+        ARCoreWorldOriginHelperClass.Reset();
+        yield return new WaitForSeconds(1);
         arCoreSession = ARCoreDevice.AddComponent<ARCoreSession>();
         arCoreSession.SessionConfig = arCoreSessionConfigPrefab;
         arCoreSession.enabled = true;
-        Debug.Log("New arcore session?: " + (ARCoreDevice.GetComponent<ARCoreSession>() != null));
+        ARCoreRoot.SetActive(false);
+        yield return null;
     }
 }
 
