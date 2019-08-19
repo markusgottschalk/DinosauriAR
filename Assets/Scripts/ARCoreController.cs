@@ -542,12 +542,12 @@ public class ARCoreController : MonoBehaviour
         }
         UIController.ShowMessage(reason, 5);
         m_IsQuitting = true;
-        Invoke("_DoQuit", 5.0f);
+        Invoke("QuitExpedition", 5.0f);
     }
 
-    private void _DoQuit()
+    private void QuitExpedition()
     {
-        GameManager.LeaveApp();
+        GameManager.QuitExpedition();
     }
 
     /// <summary>
