@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class UIController : MonoBehaviour
 {
-    public ARCoreController ARCoreController;
     public NetworkManagerController NetworkManagerController;
     public GameManager GameManager;
 

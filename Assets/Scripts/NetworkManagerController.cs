@@ -41,7 +41,9 @@ public class NetworkManagerController : MonoBehaviour
     /// <summary>
     /// The Cloud Anchors Example Controller.
     /// </summary>
-    public ARCoreController ARCoreController;
+    //public ARCoreController ARCoreController;
+
+    public VuforiaController VuforiaController;
 
     /// <summary>
     /// The number of matches that will be shown.
@@ -91,7 +93,7 @@ public class NetworkManagerController : MonoBehaviour
 
     private void Start()
     {
-        MainNetworkManager.OnClientConnected += ARCoreController.OnConnectedToServer;
+        MainNetworkManager.OnClientConnected += VuforiaController.OnConnectedToServer;
         MainNetworkManager.OnClientDisconnected += UIController.OnDisconnectedFromServer;
     }
 

@@ -35,11 +35,6 @@ public class GameManager : MonoBehaviour
     public GameObject UICamera;
 
     /// <summary>
-    /// The ARCore Controller.
-    /// </summary>
-    public ARCoreController ARCoreController;
-
-    /// <summary>
     /// The UI Controller.
     /// </summary>
     public UIController UIController;
@@ -48,6 +43,8 @@ public class GameManager : MonoBehaviour
     /// The NetworkManager Controller.
     /// </summary>
     public NetworkManagerController NetworkManagerController;
+
+    public VuforiaController VuforiaController;
 
     /// <summary>
     /// The list which describes which tools can work on which block materials.
@@ -86,8 +83,8 @@ public class GameManager : MonoBehaviour
         //if the back button of the smartphone was pressed
         if (Input.GetKey(KeyCode.Escape))
         {
-            //and the Application is in AR-mode (Hosting)
-            if(ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Hosting || ARCoreController.getApplicationMode() == ARCoreController.ApplicationMode.Resolving)
+            //and the Application is in AR-mode 
+            if (VuforiaController.ARMode)
             {
                 QuitExpedition();
             }
@@ -113,7 +110,8 @@ public class GameManager : MonoBehaviour
     public void StartExpedition(string expeditionName)
     {
         UICamera.SetActive(false);
-        ARCoreController.OnEnterHostingModeClick();
+        //ARCoreController.OnEnterHostingModeClick();
+        VuforiaController.StartExpedition();
     }
 
     /// <summary>
@@ -123,7 +121,8 @@ public class GameManager : MonoBehaviour
     public void JoinExpedition(string expeditionName)
     {
         UICamera.SetActive(false);
-        ARCoreController.OnEnterResolvingModeClick();
+        //ARCoreController.OnEnterResolvingModeClick();
+        VuforiaController.StartExpedition();
     }
 
     /// <summary>
@@ -131,7 +130,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void QuitExpedition()
     {
-        ARCoreController.QuitARMode();
+        //ARCoreController.QuitARMode();
+        VuforiaController.QuitARMode();
         UICamera.SetActive(true);
         NetworkManagerController.QuitMatch();
     }
